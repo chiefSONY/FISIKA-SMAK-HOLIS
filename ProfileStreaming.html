@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sony Kristanto · Physics Educator</title>
+    <title>Sony Kristanto · Physics Educator · ESP-CAM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
@@ -179,10 +179,11 @@
             justify-content: center;
         }
 
-        .video-wrapper iframe {
+        .video-wrapper img {
             width: 100%;
             height: 100%;
-            border: none;
+            object-fit: contain;
+            display: block;
             background: #0a1218;
         }
 
@@ -190,7 +191,7 @@
             position: absolute;
             color: #4a7a8f;
             font-size: 0.9rem;
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             gap: 0.6rem;
@@ -252,8 +253,7 @@
             gap: 0.5rem;
         }
 
-        .stream-controls .actions button,
-        .stream-controls .actions a {
+        .stream-controls .actions button {
             color: #6a9ab0;
             background: rgba(255, 255, 255, 0.02);
             padding: 0.3rem 0.9rem;
@@ -266,10 +266,30 @@
             gap: 0.4rem;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-            text-decoration: none;
         }
 
-        .stream-controls .actions button:hover,
+        .stream-controls .actions button:hover {
+            background: rgba(0, 200, 255, 0.04);
+            border-color: rgba(0, 200, 255, 0.1);
+            color: #b0dfff;
+        }
+
+        .stream-controls .actions a {
+            color: #6a9ab0;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
         .stream-controls .actions a:hover {
             background: rgba(0, 200, 255, 0.04);
             border-color: rgba(0, 200, 255, 0.1);
@@ -659,16 +679,38 @@
             background: rgba(0, 200, 255, 0.04);
             border: 1px solid rgba(0, 200, 255, 0.06);
             border-radius: 1rem;
-            padding: 1rem;
+            padding: 0.8rem;
             margin-top: 0.8rem;
             text-align: center;
             color: #6a9ab0;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .info-box i {
             color: #4db8ff;
             margin-right: 0.4rem;
+        }
+
+        .info-box a {
+            color: #4db8ff;
+            text-decoration: none;
+        }
+
+        .info-box a:hover {
+            text-decoration: underline;
+        }
+
+        .fa-spin {
+            animation: fa-spin 1s infinite linear;
+        }
+
+        @keyframes fa-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         @media (max-width: 1024px) {
@@ -837,10 +879,13 @@
             </div>
 
             <div class="video-wrapper">
-                <iframe id="espFrame" src="http://10.101.209.119/" allow="autoplay"></iframe>
-                <div class="placeholder" id="espPlaceholder" style="display:none;">
+                <img id="espStream"
+                src="http://10.101.209.119/"
+                alt="ESP32 Stream"
+                style="width:100%; height:100%; object-fit:contain; display:none;">
+                <div class="placeholder" id="espPlaceholder" style="display:flex;">
                     <i class="fas fa-microchip"></i>
-                    <span>Tidak dapat terhubung ke ESP</span>
+                    <span id="placeholderText">Menghubungkan ke ESP...</span>
                     <span style="font-size:0.65rem; opacity:0.5;">http://10.101.209.119/</span>
                 </div>
                 <div class="video-label">
@@ -855,7 +900,7 @@
                 </div>
                 <div class="actions">
                     <button onclick="refreshStream()">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
                     </button>
                     <a href="http://10.101.209.119/" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Buka
@@ -865,7 +910,8 @@
 
             <div class="info-box">
                 <i class="fas fa-info-circle"></i>
-                Jika streaming tidak muncul, buka langsung di <a href="http://10.101.209.119/" target="_blank" style="color:#4db8ff;">http://10.101.209.119/</a>
+                Jika stream tidak muncul, buka langsung di <a href="http://10.101.209.119/" target="_blank">http://10.101.209.119/</a>
+                <br><span style="font-size:0.65rem; opacity:0.6;">Pastikan ESP terhubung ke jaringan yang sama</span>
             </div>
 
             <div class="stream-footer">
@@ -876,101 +922,67 @@
     </div>
 
     <script>
-        const iframe = document.getElementById('espFrame');
+        const img = document.getElementById('espStream');
         const placeholder = document.getElementById('espPlaceholder');
+        const placeholderText = document.getElementById('placeholderText');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         const statusInfo = document.getElementById('statusInfo');
         const statusIcon = document.getElementById('statusIcon');
+        const refreshIcon = document.getElementById('refreshIcon');
 
         let attempts = 0;
-        const maxAttempts = 3;
+        const maxAttempts = 5;
+        let autoRefreshTimer = null;
 
-        function checkIframeLoaded() {
-            // Cek apakah iframe berhasil load
-            iframe.onload = function() {
-                statusDot.className = 'status-dot';
-                statusText.textContent = 'LIVE';
-                statusInfo.textContent = 'Streaming dari ESP';
-                statusIcon.style.color = '#00ff88';
-                placeholder.style.display = 'none';
-                attempts = 0;
-            };
-
-            iframe.onerror = function() {
-                handleError();
-            };
-
-            // Timeout jika tidak ada respon
-            setTimeout(() => {
-                // Cek apakah iframe masih loading
-                try {
-                    // Jika tidak bisa diakses, anggap error
-                    if (iframe.contentWindow) {
-                        // Iframe berhasil diakses
-                        statusDot.className = 'status-dot';
-                        statusText.textContent = 'LIVE';
-                        statusInfo.textContent = 'Streaming dari ESP';
-                        statusIcon.style.color = '#00ff88';
-                        placeholder.style.display = 'none';
-                    }
-                } catch (e) {
-                    // CORS error - tapi iframe mungkin tetap berfungsi
-                    statusDot.className = 'status-dot';
-                    statusText.textContent = 'LIVE';
-                    statusInfo.textContent = 'Streaming dari ESP';
-                    statusIcon.style.color = '#00ff88';
-                    placeholder.style.display = 'none';
-                }
-            }, 3000);
-        }
-
-        function handleError() {
-            attempts++;
-            if (attempts < maxAttempts) {
-                setTimeout(() => {
-                    iframe.src = 'http://10.101.209.119/';
-                }, 2000);
-            } else {
-                statusDot.className = 'status-dot off';
-                statusText.textContent = 'OFFLINE';
-                statusInfo.textContent = 'ESP tidak terhubung';
-                statusIcon.style.color = '#ff4444';
-                placeholder.style.display = 'flex';
-            }
-        }
-
-        function refreshStream() {
-            attempts = 0;
+        function loadStream() {
             statusDot.className = 'status-dot off';
             statusText.textContent = 'Loading...';
             statusInfo.textContent = 'Menghubungkan ke ESP...';
             statusIcon.style.color = '#ffaa00';
-            placeholder.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholderText.textContent = 'Menghubungkan ke ESP...';
+            img.style.display = 'none';
 
-            // Reload iframe
-            const src = iframe.src;
-            iframe.src = '';
+            const timestamp = new Date().getTime();
+            img.src = 'http://10.101.209.119/?t=' + timestamp;
+
+            img.onload = function() {
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'LIVE';
+                statusInfo.textContent = 'Streaming dari ESP';
+                statusIcon.style.color = '#00ff88';
+                attempts = 0;
+                startAutoRefresh();
+            };
+
+            img.onerror = function() {
+                attempts++;
+                if (attempts < maxAttempts) {
+                    placeholderText.textContent = `Mencoba ulang (${attempts}/${maxAttempts})...`;
+                    setTimeout(loadStream, 2000);
+                } else {
+                    img.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    placeholderText.textContent = '⚠️ ESP stream tidak tersedia';
+                    statusDot.className = 'status-dot off';
+                    statusText.textContent = 'OFFLINE';
+                    statusInfo.textContent = 'ESP tidak terhubung';
+                    statusIcon.style.color = '#ff4444';
+                    refreshIcon.className = 'fas fa-sync-alt';
+                }
+            };
+
+            // Timeout
             setTimeout(() => {
-                iframe.src = 'http://10.101.209.119/';
-            }, 300);
-        }
-
-        // Auto refresh setiap 15 detik
-        setInterval(() => {
-            if (statusDot.className === 'status-dot') {
-                const src = iframe.src;
-                iframe.src = '';
-                setTimeout(() => {
-                    iframe.src = 'http://10.101.209.119/';
-                }, 300);
-            }
-        }, 15000);
-
-        window.addEventListener('load', function() {
-            checkIframeLoaded();
-        });
-    </script>
-
-</body>
-</html>
+                if (img.style.display !== 'block' && attempts < maxAttempts) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        placeholderText.textContent = `Timeout (${attempts}/${maxAttempts})...`;
+                        setTimeout(loadStream, 2000);
+                    } else {
+                        img.style.display = 'none';
+                        placeholder.style.display = 'flex';
+                        placeholderText.text
