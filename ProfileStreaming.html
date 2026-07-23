@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sony Kristanto · Physics Educator · Webcam</title>
+    <title>Sony Kristanto · Physics Educator · ESP-CAM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
@@ -161,6 +161,12 @@
             box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
         }
 
+        .status-dot.loading {
+            background: #ffaa00;
+            animation: blink 0.8s infinite;
+            box-shadow: 0 0 12px rgba(255, 170, 0, 0.3);
+        }
+
         @keyframes blink {
             0%,
             100% {
@@ -184,10 +190,10 @@
             justify-content: center;
         }
 
-        .video-wrapper video {
+        .video-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
             background: #0a1218;
         }
@@ -279,10 +285,26 @@
             color: #b0dfff;
         }
 
-        .stream-controls .actions button.active {
-            background: rgba(0, 200, 255, 0.08);
-            border-color: rgba(0, 200, 255, 0.15);
-            color: #7fd4ff;
+        .stream-controls .actions a {
+            color: #6a9ab0;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .stream-controls .actions a:hover {
+            background: rgba(0, 200, 255, 0.04);
+            border-color: rgba(0, 200, 255, 0.1);
+            color: #b0dfff;
         }
 
         /* ===== PROFIL ===== */
@@ -668,7 +690,6 @@
             margin-right: 0.3rem;
         }
 
-        /* Loading spinner */
         .fa-spin {
             animation: fa-spin 1s infinite linear;
         }
@@ -837,26 +858,30 @@
             <div class="stream-header">
                 <div class="title">
                     <i class="fas fa-video"></i>
-                    <span>Webcam Streaming</span>
+                    <span>ESP-CAM Streaming</span>
                 </div>
                 <div class="stream-status">
                     <span class="status-dot" id="statusDot"></span>
                     <span id="statusText">Loading...</span>
                     <span style="opacity:0.5; margin-left: 0.2rem;">·</span>
-                    <span style="opacity:0.6;">Webcam</span>
+                    <span style="opacity:0.6;">ESP32</span>
                 </div>
             </div>
 
-            <!-- Webcam Stream -->
+            <!-- ESP Stream -->
             <div class="video-wrapper">
-                <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
-                <div class="placeholder" id="webcamPlaceholder">
-                    <i class="fas fa-camera" id="placeholderIcon"></i>
-                    <span id="placeholderText">Mengaktifkan webcam...</span>
-                    <span style="font-size:0.65rem; opacity:0.5;">izinkan akses kamera</span>
+                <img id="espStream"
+                src="http://10.101.209.119/"
+                alt="ESP32 Stream"
+                style="width:100%; height:100%; object-fit:contain; display:none;"
+                onerror="handleStreamError()">
+                <div class="placeholder" id="espPlaceholder" style="display:flex;">
+                    <i class="fas fa-microchip" id="placeholderIcon"></i>
+                    <span id="placeholderText">Menghubungkan ke ESP...</span>
+                    <span style="font-size:0.65rem; opacity:0.5;">http://10.101.209.119/</span>
                 </div>
                 <div class="video-label">
-                    <i class="fas fa-camera"></i> Webcam · lokal
+                    <i class="fas fa-microchip"></i> ESP32-CAM · 10.101.209.119
                 </div>
             </div>
 
@@ -864,15 +889,15 @@
             <div class="stream-controls">
                 <div class="info">
                     <i class="fas fa-circle" id="statusIcon" style="color: #ffaa00; font-size: 0.5rem;"></i>
-                    <span id="statusInfo">Mengaktifkan webcam...</span>
+                    <span id="statusInfo">Menghubungkan...</span>
                 </div>
                 <div class="actions">
-                    <button id="toggleBtn" onclick="toggleWebcam()">
-                        <i class="fas fa-stop"></i> Stop
+                    <button onclick="refreshStream()">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
                     </button>
-                    <button onclick="captureSnapshot()">
-                        <i class="fas fa-camera"></i> Snapshot
-                    </button>
+                    <a href="http://10.101.209.119/" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Buka
+                    </a>
                 </div>
             </div>
 
@@ -884,105 +909,111 @@
     </div>
 
     <script>
-        let stream = null;
-        let isStreaming = false;
-        const video = document.getElementById('webcamStream');
-        const placeholder = document.getElementById('webcamPlaceholder');
+        const img = document.getElementById('espStream');
+        const placeholder = document.getElementById('espPlaceholder');
         const placeholderText = document.getElementById('placeholderText');
         const placeholderIcon = document.getElementById('placeholderIcon');
-        const toggleBtn = document.getElementById('toggleBtn');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         const statusInfo = document.getElementById('statusInfo');
         const statusIcon = document.getElementById('statusIcon');
+        const refreshIcon = document.getElementById('refreshIcon');
 
-        // ===== START WEBCAM OTOMATIS =====
-        window.addEventListener('load', function() {
-            // Tunggu sebentar lalu mulai webcam
-            setTimeout(startWebcam, 500);
-        });
+        let loadAttempts = 0;
+        const maxAttempts = 3;
 
-        async function startWebcam() {
-            try {
-                // Update status loading
-                statusDot.className = 'status-dot off';
-                statusText.textContent = 'Loading...';
-                statusInfo.textContent = 'Mengakses webcam...';
-                statusIcon.style.color = '#ffaa00';
-                placeholderText.textContent = 'Mengaktifkan webcam...';
-                placeholderIcon.className = 'fas fa-spinner fa-spin';
+        // ===== LOAD STREAM =====
+        function loadStream() {
+            statusDot.className = 'status-dot loading';
+            statusText.textContent = 'Loading...';
+            statusInfo.textContent = 'Menghubungkan ke ESP...';
+            statusIcon.style.color = '#ffaa00';
+            placeholderText.textContent = 'Menghubungkan ke ESP...';
+            placeholderIcon.className = 'fas fa-spinner fa-spin';
+            placeholder.style.display = 'flex';
+            img.style.display = 'none';
 
-                const mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        facingMode: 'user'
-                    },
-                    audio: false
-                });
+            // Tambahkan timestamp untuk menghindari cache
+            const timestamp = new Date().getTime();
+            img.src = 'http://10.101.209.119/?t=' + timestamp;
 
-                stream = mediaStream;
-                video.srcObject = stream;
-                await video.play();
-
-                video.style.display = 'block';
+            img.onload = function() {
+                img.style.display = 'block';
                 placeholder.style.display = 'none';
-                isStreaming = true;
-
-                // Update UI - LIVE
-                toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
-                toggleBtn.classList.add('active');
                 statusDot.className = 'status-dot';
                 statusText.textContent = 'LIVE';
-                statusInfo.textContent = 'Webcam aktif';
+                statusInfo.textContent = 'Streaming dari ESP';
                 statusIcon.style.color = '#00ff88';
-                placeholderIcon.className = 'fas fa-camera';
+                placeholderIcon.className = 'fas fa-microchip';
+                loadAttempts = 0;
+            };
 
-            } catch (err) {
-                console.error('Error accessing webcam:', err);
-                placeholderText.textContent = '⚠️ Webcam tidak dapat diakses';
+            img.onerror = function() {
+                handleStreamError();
+            };
+
+            // Timeout jika terlalu lama
+            setTimeout(() => {
+                if (img.style.display !== 'block') {
+                    handleStreamError();
+                }
+            }, 5000);
+        }
+
+        // ===== HANDLE ERROR =====
+        function handleStreamError() {
+            loadAttempts++;
+            if (loadAttempts < maxAttempts) {
+                placeholderText.textContent = `Mencoba ulang (${loadAttempts}/${maxAttempts})...`;
+                setTimeout(loadStream, 2000);
+            } else {
+                img.style.display = 'none';
                 placeholder.style.display = 'flex';
-                video.style.display = 'none';
+                placeholderText.textContent = '⚠️ ESP stream tidak tersedia';
                 placeholderIcon.className = 'fas fa-exclamation-triangle';
                 statusDot.className = 'status-dot off';
-                statusText.textContent = 'ERROR';
-                statusInfo.textContent = 'Gagal akses webcam';
+                statusText.textContent = 'OFFLINE';
+                statusInfo.textContent = 'ESP tidak terhubung';
                 statusIcon.style.color = '#ff4444';
-                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+                refreshIcon.className = 'fas fa-sync-alt';
+            }
+        }
 
-                if (err.name === 'NotAllowedError') {
-                    placeholderText.textContent = '⚠️ Izin kamera ditolak';
-                } else if (err.name === 'NotFoundError') {
-                    placeholderText.textContent = '⚠️ Webcam tidak ditemukan';
+        // ===== REFRESH STREAM =====
+        function refreshStream() {
+            refreshIcon.className = 'fas fa-sync-alt fa-spin';
+            loadAttempts = 0;
+            loadStream();
+            setTimeout(() => {
+                refreshIcon.className = 'fas fa-sync-alt';
+            }, 3000);
+        }
+
+        // ===== AUTO REFRESH =====
+        let autoRefreshInterval;
+
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                if (img.style.display === 'block') {
+                    const timestamp = new Date().getTime();
+                    img.src = 'http://10.101.209.119/?t=' + timestamp;
                 }
-            }
+            }, 10000);
         }
 
-        // ===== TOGGLE WEBCAM =====
-        async function toggleWebcam() {
-            if (isStreaming) {
-                stopWebcam();
-            } else {
-                await startWebcam();
-            }
-        }
+        // ===== INIT =====
+        window.addEventListener('load', function() {
+            loadStream();
+            startAutoRefresh();
+        });
 
-        function stopWebcam() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+        // Bersihkan interval saat halaman ditutup
+        window.addEventListener('beforeunload', function() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
             }
-            video.srcObject = null;
-            video.style.display = 'none';
-            placeholder.style.display = 'flex';
-            placeholderText.textContent = 'Klik Start untuk akses webcam';
-            placeholderIcon.className = 'fas fa-camera';
-            isStreaming = false;
+        });
+    </script>
 
-            // Update UI
-            toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
-            toggleBtn.classList.remove('active');
-            statusDot.className = 'status-dot off';
-            statusText.textContent = 'OFF';
-            statusInfo.textContent = 'Webcam tidak aktif';
-            status
+</body>
+</html>
