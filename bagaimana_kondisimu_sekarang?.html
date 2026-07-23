@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Bagaimana kondisimu?</title>
+  <style>
+    body {
+      background-color: black;
+      color: #39ff14; /* hijau neon */
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    }
+    video {
+      border: 2px solid #39ff14;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 1.5em;
+      text-shadow: 0 0 5px #39ff14;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bagaimana kondisimu?</h1>
+  <video id="video" autoplay playsinline width="640" height="480"></video>
+  <div id="output">Mendeteksi kondisi...</div>
+
+  <script type="module">
+    import "@mediapipe/camera_utils/camera_utils.js";
+    import "@mediapipe/drawing_utils/drawing_utils.js";
+    import "@mediapipe/face_mesh/face_mesh.js";
+
+    const videoElement = document.getElementById('video');
+    const outputElement = document.getElementById('output');
+
+    // Inisialisasi FaceMesh
+    const faceMesh = new FaceMesh.FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    faceMesh.onResults(onResults);
+
+    const camera = new CameraUtils.Camera(videoElement, {
+      onFrame: async () => {
+        await faceMesh.send({image: videoElement});
+      },
+      width: 640,
+      height: 480
+    });
+    camera.start();
+
+    function onResults(results) {
+      if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+        outputElement.innerText = "Wajah tidak terdeteksi.";
+        return;
+      }
+      // --- Analisis ekspresi sederhana (dummy rule) ---
+      const landmarks = results.multiFaceLandmarks[0];
+      const mouthOpen = landmarks[13].y - landmarks[14].y;
+
+      let ekspresi = "biasa";
+      if (mouthOpen > 0.05) ekspresi = "senang";
+      else if (mouthOpen < 0.01) ekspresi = "sedih";
+
+      switch (ekspresi) {
+        case "sedih":
+          outputElement.innerText = "Jangan khawatir, semua akan baik-baik saja 🌈";
+          break;
+        case "senang":
+          outputElement.innerText = "Hebat! Senyummu menular 😄";
+          break;
+        case "marah":
+          outputElement.innerText = "Tenang... tarik napas dalam dulu ya 🌿";
+          break;
+        case "lelah":
+          outputElement.innerText = "Kamu kuat, terus semangat 💪 Jangan lupa beristirahat 💤";
+          break;
+        default:
+          outputElement.innerText = "Tetap semangat, kamu bisa melakukannya 🚀";
+      }
+    }
+
+    // --- Analisis suara dengan Web Audio API ---
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.fftSize = 256;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function analyzeVoice() {
+          analyser.getByteFrequencyData(dataArray);
+          let volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+
+          if (volume < 10) {
+            outputElement.innerText = "Bersuara lebih percaya diri ya ✨";
+          } else if (volume > 200) {
+            outputElement.innerText = "Bagus! Suaramu lantang, cocok tampil di depan publik 🎤";
+          } else {
+            outputElement.innerText = "Suaramu terdengar jelas 👍";
+          }
+
+          // Deteksi sederhana untuk suara serak (dummy rule: frekuensi rendah dominan)
+          let lowFreq = dataArray.slice(0, 10).reduce((a, b) => a + b) / 10;
+          if (lowFreq > 50) {
+            outputElement.innerText = "Suaramu agak serak, minum air putih yang banyak 💧";
+          }
+
+          requestAnimationFrame(analyzeVoice);
+        }
+        analyzeVoice();
+      })
+      .catch(err => {
+        console.error("Mic error:", err);
+      });
+  </script>
+</body>
+</html>
 
