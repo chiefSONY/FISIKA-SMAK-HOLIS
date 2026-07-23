@@ -140,6 +140,16 @@
             color: rgba(0, 255, 136, 0.3);
         }
 
+        .card .card-title .timer-badge {
+            font-size: 0.6rem;
+            background: rgba(0, 255, 136, 0.06);
+            padding: 0.15rem 0.6rem;
+            border-radius: 30px;
+            color: rgba(0, 255, 136, 0.3);
+            font-weight: 400;
+            margin-left: 0.3rem;
+        }
+
         .video-wrapper {
             width: 100%;
             aspect-ratio: 16/9;
@@ -187,43 +197,6 @@
             color: rgba(0, 255, 136, 0.05);
         }
 
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            z-index: 10;
-            border-radius: 1.5rem;
-        }
-
-        .loading-overlay .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(0, 255, 136, 0.05);
-            border-top: 3px solid rgba(0, 255, 136, 0.3);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-overlay .load-text {
-            color: rgba(0, 255, 136, 0.3);
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-        }
-
         .status-bar {
             display: flex;
             align-items: center;
@@ -250,6 +223,18 @@
             background: #ff4444;
             animation: none;
             box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .status-dot.waiting {
+            background: #ffaa00;
+            animation: blink 1.4s infinite;
+            box-shadow: 0 0 12px rgba(255, 170, 0, 0.3);
+        }
+
+        .status-dot.done {
+            background: #4488ff;
+            animation: none;
+            box-shadow: 0 0 12px rgba(68, 136, 255, 0.3);
         }
 
         @keyframes blink {
@@ -407,6 +392,11 @@
             font-size: 0.8rem;
         }
 
+        .controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         .footer-note {
             margin-top: 1.5rem;
             text-align: center;
@@ -415,7 +405,6 @@
             letter-spacing: 1px;
         }
 
-        /* Camera selector */
         .camera-selector {
             margin-top: 0.5rem;
             padding: 0.3rem 0.8rem;
@@ -438,6 +427,80 @@
         .camera-selector option {
             background: #0a1218;
             color: #c0dce8;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 5;
+            border-radius: 1.5rem;
+        }
+
+        .scan-overlay.show {
+            display: flex;
+        }
+
+        .scan-overlay .scan-text {
+            color: rgba(0, 255, 136, 0.6);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .scan-overlay .scan-sub {
+            color: rgba(0, 255, 136, 0.2);
+            font-size: 0.8rem;
+        }
+
+        .scan-overlay .scan-progress {
+            width: 200px;
+            height: 3px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .scan-overlay .scan-progress .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #7fd4ff);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 0.5rem;
+            padding: 0.8rem 1.2rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 1rem;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-box .result-label {
+            font-size: 0.7rem;
+            color: rgba(0, 255, 136, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-box .result-value {
+            font-size: 1.1rem;
+            color: #00ff88;
+            margin-top: 0.2rem;
         }
 
         @media (max-width: 900px) {
@@ -483,6 +546,9 @@
                 padding: 0.4rem 1rem;
                 font-size: 0.7rem;
             }
+            .scan-overlay .scan-text {
+                font-size: 1rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -518,16 +584,19 @@
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-smile"></i> Deteksi Wajah
-                    <span style="font-size:0.6rem; color:rgba(0,255,136,0.1);">FaceMesh</span>
+                    <span class="timer-badge" id="faceTimer">⏱ 5s</span>
                 </div>
 
                 <div class="video-wrapper">
                     <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
                     <canvas id="faceCanvas" style="display:none;"></canvas>
 
-                    <div class="loading-overlay" id="loadingOverlay">
-                        <div class="spinner"></div>
-                        <div class="load-text">Memuat FaceMesh...</div>
+                    <div class="scan-overlay" id="faceScanOverlay">
+                        <div class="scan-text" id="faceScanText">🔍 Mendeteksi Wajah...</div>
+                        <div class="scan-sub" id="faceScanSub">Harap tatap kamera</div>
+                        <div class="scan-progress">
+                            <div class="fill" id="faceScanProgress"></div>
+                        </div>
                     </div>
 
                     <div class="placeholder" id="webcamPlaceholder">
@@ -547,7 +616,7 @@
                     <span class="status-text" id="statusText">Loading...</span>
                     <span style="color:rgba(0,255,136,0.05);">|</span>
                     <span style="color:rgba(0,255,136,0.1); font-size:0.7rem;">FACE</span>
-                    <span class="status-text" id="faceStatus" style="font-size:0.7rem; color:rgba(0,255,136,0.2);">Tidak terdeteksi</span>
+                    <span class="status-text" id="faceStatus" style="font-size:0.7rem; color:rgba(0,255,136,0.2);">Menunggu...</span>
                 </div>
 
                 <div class="emotion-display">
@@ -562,18 +631,31 @@
                         <span class="highlight">✨</span> Aktifkan webcam untuk mulai deteksi
                     </span>
                 </div>
+
+                <div class="result-box" id="faceResultBox">
+                    <div class="result-label">Hasil Deteksi Wajah</div>
+                    <div class="result-value" id="faceResultValue">-</div>
+                </div>
             </div>
 
             <!-- KOLOM KANAN: SUARA -->
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-microphone"></i> Deteksi Suara
-                    <span style="font-size:0.6rem; color:rgba(0,255,136,0.1);">Web Audio API</span>
+                    <span class="timer-badge" id="voiceTimer">⏱ 5s</span>
                 </div>
 
-                <div style="width:100%; aspect-ratio:16/9; background:rgba(0,0,0,0.2); border-radius:1.5rem; border:1px solid rgba(0,255,136,0.02); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem;">
+                <div style="width:100%; aspect-ratio:16/9; background:rgba(0,0,0,0.2); border-radius:1.5rem; border:1px solid rgba(0,255,136,0.02); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem; position:relative;">
                     <i class="fas fa-microphone" style="font-size:3.5rem; color:rgba(0,255,136,0.04);"></i>
                     <span style="color:rgba(0,255,136,0.1); font-size:0.8rem;">Mendeteksi suara secara real-time</span>
+
+                    <div class="scan-overlay" id="voiceScanOverlay" style="display:none; border-radius:1.5rem;">
+                        <div class="scan-text" id="voiceScanText">🔊 Mendeteksi Suara...</div>
+                        <div class="scan-sub" id="voiceScanSub">Harap bicara dengan jelas</div>
+                        <div class="scan-progress">
+                            <div class="fill" id="voiceScanProgress"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="voice-display">
@@ -590,19 +672,27 @@
                         <span class="highlight">🎤</span> Bicara untuk mulai deteksi suara
                     </span>
                 </div>
+
+                <div class="result-box" id="voiceResultBox">
+                    <div class="result-label">Hasil Deteksi Suara</div>
+                    <div class="result-value" id="voiceResultValue">-</div>
+                </div>
             </div>
         </div>
 
         <!-- CONTROLS -->
         <div class="controls">
             <button id="toggleBtn" onclick="toggleWebcam()">
-                <i class="fas fa-stop"></i> Stop Webcam
+                <i class="fas fa-play"></i> Start Webcam
+            </button>
+            <button id="scanFaceBtn" onclick="startFaceScan()">
+                <i class="fas fa-search"></i> Scan Wajah
+            </button>
+            <button id="scanVoiceBtn" onclick="startVoiceScan()">
+                <i class="fas fa-search"></i> Scan Suara
             </button>
             <button onclick="captureSnapshot()">
                 <i class="fas fa-camera"></i> Snapshot
-            </button>
-            <button onclick="refreshCamera()">
-                <i class="fas fa-sync-alt"></i> Refresh Kamera
             </button>
         </div>
 
@@ -612,23 +702,17 @@
         </div>
     </div>
 
-    <!-- LIBRARY -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-
     <script>
         // ================================================================
-        // ===== WEBCAM + FACE MESH =====
+        // ===== WEBCAM + FACE DETECTION =====
         // ================================================================
 
         let stream = null;
         let isStreaming = false;
-        let faceMesh = null;
-        let isFaceMeshReady = false;
-        let cameraInstance = null;
         let selectedDeviceId = null;
+        let faceDetectionInterval = null;
+        let isFaceScanning = false;
+        let faceScanResult = null;
 
         const video = document.getElementById('webcamStream');
         const canvas = document.getElementById('faceCanvas');
@@ -643,8 +727,15 @@
         const emotionEmoji = document.getElementById('emotionEmoji');
         const emotionValue = document.getElementById('emotionValue');
         const faceAdvice = document.getElementById('faceAdvice');
-        const loadingOverlay = document.getElementById('loadingOverlay');
+        const faceResultBox = document.getElementById('faceResultBox');
+        const faceResultValue = document.getElementById('faceResultValue');
         const cameraSelect = document.getElementById('cameraSelect');
+        const faceScanOverlay = document.getElementById('faceScanOverlay');
+        const faceScanText = document.getElementById('faceScanText');
+        const faceScanSub = document.getElementById('faceScanSub');
+        const faceScanProgress = document.getElementById('faceScanProgress');
+        const faceTimer = document.getElementById('faceTimer');
+        const scanFaceBtn = document.getElementById('scanFaceBtn');
 
         // ===== KATA-KATA BERDASARKAN EMOSI =====
         const emotionMessages = {
@@ -674,70 +765,111 @@
             }
         };
 
-        // ===== EMOTION DETECTION =====
-        function detectEmotion(landmarks) {
-            const mouthTop = landmarks[13];
-            const mouthBottom = landmarks[14];
-            const mouthLeft = landmarks[78];
-            const mouthRight = landmarks[308];
+        // ===== SIMPLE FACE DETECTION =====
+        function detectFaceFromVideo() {
+            if (!isStreaming || !video.videoWidth || isFaceScanning) return;
 
-            const eyeLeftTop = landmarks[159];
-            const eyeLeftBottom = landmarks[145];
-            const eyeRightTop = landmarks[386];
-            const eyeRightBottom = landmarks[374];
+            const w = video.videoWidth;
+            const h = video.videoHeight;
 
-            const browLeft = landmarks[70];
-            const browRight = landmarks[300];
+            canvas.width = w;
+            canvas.height = h;
+            const tempCtx = canvas.getContext('2d');
+            tempCtx.drawImage(video, 0, 0, w, h);
 
-            const mouthHeight = Math.abs(mouthTop.y - mouthBottom.y);
-            const mouthWidth = Math.abs(mouthLeft.x - mouthRight.x);
-            const mouthRatio = mouthHeight / (mouthWidth + 0.001);
+            const imageData = tempCtx.getImageData(0, 0, w, h);
+            const data = imageData.data;
 
-            const leftEyeOpen = Math.abs(eyeLeftTop.y - eyeLeftBottom.y);
-            const rightEyeOpen = Math.abs(eyeRightTop.y - eyeRightBottom.y);
-            const avgEyeOpen = (leftEyeOpen + rightEyeOpen) / 2;
+            let facePixels = 0;
+            let totalPixels = w * h;
 
-            const browY = (browLeft.y + browRight.y) / 2;
-            const eyeY = (eyeLeftTop.y + eyeRightTop.y) / 2;
-            const browEyeDiff = browY - eyeY;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                if (r > 60 && g > 40 && b > 20 &&
+                    r > g && r > b &&
+                    Math.abs(r - g) > 15) {
+                    facePixels++;
+                }
+            }
+
+            const faceRatio = facePixels / totalPixels;
+
+            if (faceRatio > 0.02) {
+                faceStatus.textContent = 'Terdeteksi ✓';
+                faceStatus.style.color = 'rgba(0,255,136,0.8)';
+                detectSimpleEmotion(data, w, h);
+            } else {
+                faceStatus.textContent = 'Tidak terdeteksi';
+                faceStatus.style.color = 'rgba(0,255,136,0.2)';
+            }
+        }
+
+        // ===== DETEKSI EMOSI SEDERHANA =====
+        function detectSimpleEmotion(data, w, h) {
+            const startY = Math.floor(h * 0.6);
+            const endY = Math.floor(h * 0.85);
+            const startX = Math.floor(w * 0.2);
+            const endX = Math.floor(w * 0.8);
+
+            let mouthBrightness = 0;
+            let mouthPixels = 0;
+
+            for (let y = startY; y < endY; y++) {
+                for (let x = startX; x < endX; x++) {
+                    const idx = (y * w + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    const brightness = (r + g + b) / 3;
+                    mouthBrightness += brightness;
+                    mouthPixels++;
+                }
+            }
+
+            const avgMouthBrightness = mouthBrightness / mouthPixels;
+
+            const eyeStartY = Math.floor(h * 0.2);
+            const eyeEndY = Math.floor(h * 0.4);
+            const eyeStartX = Math.floor(w * 0.15);
+            const eyeEndX = Math.floor(w * 0.85);
+
+            let eyeBrightness = 0;
+            let eyePixels = 0;
+
+            for (let y = eyeStartY; y < eyeEndY; y++) {
+                for (let x = eyeStartX; x < eyeEndX; x++) {
+                    const idx = (y * w + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    const brightness = (r + g + b) / 3;
+                    eyeBrightness += brightness;
+                    eyePixels++;
+                }
+            }
+
+            const avgEyeBrightness = eyeBrightness / eyePixels;
 
             let emotion = 'netral';
 
-            if (mouthRatio > 0.5 && mouthHeight > 0.025) {
+            if (avgMouthBrightness > 150 && avgEyeBrightness < 130) {
                 emotion = 'senang';
-            } else if (mouthRatio < 0.25 && browEyeDiff < 0.015 && avgEyeOpen < 0.025) {
+            } else if (avgEyeBrightness < 100 && avgMouthBrightness < 120) {
                 emotion = 'sedih';
-            } else if (browEyeDiff < 0.005 && avgEyeOpen < 0.015 && mouthRatio < 0.3) {
+            } else if (avgEyeBrightness < 90 && avgMouthBrightness > 100) {
                 emotion = 'marah';
-            } else if (avgEyeOpen < 0.015 && mouthRatio < 0.3 && mouthHeight < 0.015) {
+            } else if (avgEyeBrightness < 80 && avgMouthBrightness < 100) {
                 emotion = 'lelah';
-            } else if (mouthRatio > 0.2 && mouthRatio < 0.4 && avgEyeOpen > 0.02 && avgEyeOpen < 0.04) {
+            } else if (avgEyeBrightness > 120 && avgEyeBrightness < 160 && avgMouthBrightness > 100 && avgMouthBrightness < 140) {
                 emotion = 'tenang';
             }
 
-            return emotion;
-        }
-
-        // ===== DRAW LANDMARKS =====
-        function drawLandmarks(landmarks) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < landmarks.length; i++) {
-                const x = landmarks[i].x * canvas.width;
-                const y = landmarks[i].y * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
-                ctx.fill();
-            }
-        }
-
-        // ===== UPDATE EMOTION DISPLAY =====
-        function updateEmotionDisplay(emotion) {
-            const data = emotionMessages[emotion] || emotionMessages['netral'];
-            emotionEmoji.textContent = data.emoji;
+            const data2 = emotionMessages[emotion] || emotionMessages['netral'];
+            emotionEmoji.textContent = data2.emoji;
             emotionValue.textContent = emotion.charAt(0).toUpperCase() + emotion.slice(1);
-            faceAdvice.innerHTML = data.advice;
+            faceAdvice.innerHTML = data2.advice;
 
             if (emotion === 'senang') {
                 emotionValue.style.color = '#00ff88';
@@ -755,53 +887,108 @@
                 emotionValue.style.color = '#00ff88';
                 emotionValue.style.textShadow = '0 0 30px rgba(0,255,136,0.1)';
             }
+
+            faceScanResult = emotion;
         }
 
-        // ===== FACE MESH INIT =====
-        function initFaceMesh() {
-            faceMesh = new FaceMesh({
-                locateFile: (file) => {
-                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        // ===== START FACE SCAN =====
+        function startFaceScan() {
+            if (!isStreaming) {
+                alert('Aktifkan webcam terlebih dahulu!');
+                return;
+            }
+
+            if (isFaceScanning) return;
+
+            isFaceScanning = true;
+            faceScanResult = null;
+            scanFaceBtn.disabled = true;
+            faceScanOverlay.style.display = 'flex';
+            faceScanOverlay.style.zIndex = '10';
+            faceScanText.textContent = '🔍 Mendeteksi Wajah...';
+            faceScanSub.textContent = 'Harap tatap kamera selama 5 detik';
+            faceScanProgress.style.width = '0%';
+
+            // Matikan deteksi wajah berjalan
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+                faceDetectionInterval = null;
+            }
+
+            let progress = 0;
+            const duration = 5000; // 5 detik
+            const interval = 100;
+            let elapsed = 0;
+
+            // Timer di badge
+            let countdown = 5;
+            faceTimer.textContent = `⏱ ${countdown}s`;
+            const timerInterval = setInterval(() => {
+                countdown--;
+                faceTimer.textContent = `⏱ ${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
                 }
-            });
+            }, 1000);
 
-            faceMesh.setOptions({
-                maxNumFaces: 1,
-                refineLandmarks: true,
-                minDetectionConfidence: 0.5,
-                minTrackingConfidence: 0.5
-            });
+            const scanInterval = setInterval(() => {
+                elapsed += interval;
+                progress = (elapsed / duration) * 100;
+                faceScanProgress.style.width = Math.min(progress, 100) + '%';
 
-            faceMesh.onResults((results) => {
-                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                    const landmarks = results.multiFaceLandmarks[0];
-                    const width = video.videoWidth || 640;
-                    const height = video.videoHeight || 480;
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.style.display = 'block';
-
-                    drawLandmarks(landmarks);
-
-                    const emotion = detectEmotion(landmarks);
-                    updateEmotionDisplay(emotion);
-
-                    faceStatus.textContent = 'Terdeteksi ✓';
-                    faceStatus.style.color = 'rgba(0,255,136,0.8)';
-
+                // Update status
+                if (elapsed < duration / 2) {
+                    faceScanText.textContent = '🔍 Mendeteksi Wajah...';
+                    faceScanSub.textContent = 'Harap tatap kamera';
                 } else {
-                    faceStatus.textContent = 'Tidak terdeteksi';
-                    faceStatus.style.color = 'rgba(0,255,136,0.2)';
-                    emotionEmoji.textContent = '😐';
-                    emotionValue.textContent = 'Tidak terdeteksi';
-                    canvas.style.display = 'none';
+                    faceScanText.textContent = '🧠 Menganalisis Ekspresi...';
+                    faceScanSub.textContent = 'Sedang memproses emosi';
                 }
-            });
 
-            isFaceMeshReady = true;
-            loadingOverlay.style.display = 'none';
-            console.log('FaceMesh siap!');
+                // Ambil frame dan deteksi
+                if (video.videoWidth > 0) {
+                    const w = video.videoWidth;
+                    const h = video.videoHeight;
+                    canvas.width = w;
+                    canvas.height = h;
+                    const tempCtx = canvas.getContext('2d');
+                    tempCtx.drawImage(video, 0, 0, w, h);
+                    const imageData = tempCtx.getImageData(0, 0, w, h);
+                    detectSimpleEmotion(imageData.data, w, h);
+                }
+
+                if (elapsed >= duration) {
+                    clearInterval(scanInterval);
+                    clearInterval(timerInterval);
+                    finishFaceScan();
+                }
+            }, interval);
+        }
+
+        function finishFaceScan() {
+            isFaceScanning = false;
+            scanFaceBtn.disabled = false;
+            faceScanOverlay.style.display = 'none';
+            faceTimer.textContent = '⏱ 5s';
+
+            // Tampilkan hasil
+            const emotion = faceScanResult || 'netral';
+            const data = emotionMessages[emotion] || emotionMessages['netral'];
+
+            faceResultBox.classList.add('show');
+            faceResultValue.textContent = `${data.emoji} ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - ${data.advice.replace(/<[^>]*>/g, '')}`;
+
+            // Lanjutkan deteksi wajah normal
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+            }
+            faceDetectionInterval = setInterval(detectFaceFromVideo, 200);
+
+            // Update status
+            statusDot.className = 'status-dot done';
+            statusText.textContent = 'DONE';
+            faceStatus.textContent = 'Selesai ✓';
+            faceStatus.style.color = 'rgba(0,255,136,0.8)';
         }
 
         // ===== LIST CAMERAS =====
@@ -824,13 +1011,10 @@
                     cameraSelect.appendChild(option);
                 });
 
-                // Pilih kamera pertama secara default
                 if (videoDevices.length > 0) {
                     cameraSelect.value = videoDevices[0].deviceId;
                     selectedDeviceId = videoDevices[0].deviceId;
                 }
-
-                console.log(`Ditemukan ${videoDevices.length} kamera`);
             } catch (err) {
                 console.error('Gagal mendaftar kamera:', err);
             }
@@ -845,7 +1029,6 @@
                 placeholderIcon.className = 'fas fa-spinner fa-spin';
                 placeholder.style.display = 'flex';
                 video.style.display = 'none';
-                loadingOverlay.style.display = 'flex';
 
                 const constraints = {
                     video: {
@@ -876,26 +1059,13 @@
                 statusText.textContent = 'LIVE';
                 placeholderIcon.className = 'fas fa-camera';
 
-                if (!faceMesh) {
-                    initFaceMesh();
+                if (faceDetectionInterval) {
+                    clearInterval(faceDetectionInterval);
                 }
+                faceDetectionInterval = setInterval(detectFaceFromVideo, 200);
 
-                if (faceMesh && isFaceMeshReady) {
-                    cameraInstance = new Camera(video, {
-                        onFrame: async () => {
-                            if (isStreaming && faceMesh) {
-                                try {
-                                    await faceMesh.send({ image: video });
-                                } catch (err) {}
-                            }
-                        },
-                        width: 640,
-                        height: 480
-                    });
-                    cameraInstance.start();
-                }
-
-                loadingOverlay.style.display = 'none';
+                canvas.style.display = 'block';
+                scanFaceBtn.disabled = false;
 
             } catch (err) {
                 console.error('Error accessing webcam:', err);
@@ -907,14 +1077,14 @@
                 statusText.textContent = 'ERROR';
                 toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Webcam';
                 toggleBtn.className = '';
-                loadingOverlay.style.display = 'none';
+                scanFaceBtn.disabled = true;
 
                 if (err.name === 'NotAllowedError') {
                     placeholderText.textContent = '⚠️ Izin kamera ditolak. Izinkan akses kamera.';
                 } else if (err.name === 'NotFoundError') {
                     placeholderText.textContent = '⚠️ Webcam tidak ditemukan. Pastikan kamera terhubung.';
-                } else if (err.name === 'OverconstrainedError') {
-                    placeholderText.textContent = '⚠️ Kamera yang dipilih tidak tersedia. Coba pilih kamera lain.';
+                } else {
+                    placeholderText.textContent = `⚠️ Error: ${err.message}`;
                 }
             }
         }
@@ -933,17 +1103,6 @@
             await startWebcam(deviceId);
         }
 
-        // ===== REFRESH CAMERA =====
-        async function refreshCamera() {
-            await listCameras();
-            if (cameraSelect.value) {
-                await switchCamera();
-            } else if (cameraSelect.options.length > 1) {
-                cameraSelect.selectedIndex = 1;
-                await switchCamera();
-            }
-        }
-
         // ===== TOGGLE WEBCAM =====
         async function toggleWebcam() {
             if (isStreaming) {
@@ -955,9 +1114,9 @@
         }
 
         function stopWebcam() {
-            if (cameraInstance) {
-                cameraInstance.stop();
-                cameraInstance = null;
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
+                faceDetectionInterval = null;
             }
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -965,6 +1124,7 @@
             }
             video.srcObject = null;
             video.style.display = 'none';
+            canvas.style.display = 'none';
             placeholder.style.display = 'flex';
             placeholderText.textContent = 'Klik Start untuk akses webcam';
             placeholderIcon.className = 'fas fa-camera';
@@ -978,8 +1138,10 @@
             faceStatus.style.color = 'rgba(0,255,136,0.2)';
             emotionEmoji.textContent = '😐';
             emotionValue.textContent = 'Tidak aktif';
-            canvas.style.display = 'none';
             faceAdvice.innerHTML = '<span class="highlight">✨</span> Aktifkan webcam untuk mulai deteksi';
+            scanFaceBtn.disabled = true;
+            faceResultBox.classList.remove('show');
+            faceTimer.textContent = '⏱ 5s';
         }
 
         // ===== SNAPSHOT =====
@@ -1017,10 +1179,20 @@
         let isVoiceActive = false;
         let voiceAnimationId = null;
         let voiceStream = null;
+        let isVoiceScanning = false;
+        let voiceScanResult = null;
 
         const voiceStatus = document.getElementById('voiceStatus');
         const voiceMeter = document.getElementById('voiceMeter');
         const voiceAdvice = document.getElementById('voiceAdvice');
+        const voiceResultBox = document.getElementById('voiceResultBox');
+        const voiceResultValue = document.getElementById('voiceResultValue');
+        const voiceScanOverlay = document.getElementById('voiceScanOverlay');
+        const voiceScanText = document.getElementById('voiceScanText');
+        const voiceScanSub = document.getElementById('voiceScanSub');
+        const voiceScanProgress = document.getElementById('voiceScanProgress');
+        const voiceTimer = document.getElementById('voiceTimer');
+        const scanVoiceBtn = document.getElementById('scanVoiceBtn');
 
         const voiceMessages = {
             'serak': 'Minumlah <span class="highlight">air putih yang banyak</span> untuk melembabkan tenggorokanmu. 💧',
@@ -1055,6 +1227,7 @@
                 isVoiceActive = true;
                 voiceStatus.textContent = 'Mendeteksi...';
                 voiceAdvice.innerHTML = '<span class="highlight">🎤</span> Sedang menganalisis suara...';
+                scanVoiceBtn.disabled = false;
 
                 detectVoice();
 
@@ -1062,6 +1235,7 @@
                 console.error('Error accessing microphone:', err);
                 voiceStatus.textContent = 'Error';
                 voiceAdvice.innerHTML = '⚠️ Tidak dapat mengakses mikrofon. Periksa izin akses.';
+                scanVoiceBtn.disabled = true;
             }
         }
 
@@ -1081,9 +1255,9 @@
 
             voiceMeter.style.width = (volume * 100) + '%';
 
-            if (volume > 0.02) {
+            if (volume > 0.02 && !isVoiceScanning) {
                 analyzeVoice(volume);
-            } else {
+            } else if (!isVoiceScanning) {
                 voiceStatus.textContent = 'Diam';
                 voiceStatus.style.color = 'rgba(0,255,136,0.2)';
             }
@@ -1136,36 +1310,84 @@
             if (status) {
                 voiceStatus.textContent = status;
                 voiceAdvice.innerHTML = advice;
+                voiceScanResult = status;
             }
         }
 
-        // ===== TOGGLE VOICE =====
-        function toggleVoice() {
-            if (isVoiceActive) {
-                stopVoice();
-            } else {
-                startVoice();
+        // ===== START VOICE SCAN =====
+        function startVoiceScan() {
+            if (!isVoiceActive) {
+                alert('Aktifkan mikrofon terlebih dahulu!');
+                return;
             }
+
+            if (isVoiceScanning) return;
+
+            isVoiceScanning = true;
+            voiceScanResult = null;
+            scanVoiceBtn.disabled = true;
+            voiceScanOverlay.style.display = 'flex';
+            voiceScanOverlay.style.zIndex = '10';
+            voiceScanText.textContent = '🔊 Mendeteksi Suara...';
+            voiceScanSub.textContent = 'Harap bicara dengan jelas selama 5 detik';
+            voiceScanProgress.style.width = '0%';
+
+            let progress = 0;
+            const duration = 5000;
+            const interval = 100;
+            let elapsed = 0;
+
+            let countdown = 5;
+            voiceTimer.textContent = `⏱ ${countdown}s`;
+            const timerInterval = setInterval(() => {
+                countdown--;
+                voiceTimer.textContent = `⏱ ${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+
+            const scanInterval = setInterval(() => {
+                elapsed += interval;
+                progress = (elapsed / duration) * 100;
+                voiceScanProgress.style.width = Math.min(progress, 100) + '%';
+
+                if (elapsed < duration / 2) {
+                    voiceScanText.textContent = '🔊 Mendeteksi Suara...';
+                    voiceScanSub.textContent = 'Harap bicara dengan jelas';
+                } else {
+                    voiceScanText.textContent = '🧠 Menganalisis Suara...';
+                    voiceScanSub.textContent = 'Sedang memproses kualitas suara';
+                }
+
+                if (elapsed >= duration) {
+                    clearInterval(scanInterval);
+                    clearInterval(timerInterval);
+                    finishVoiceScan();
+                }
+            }, interval);
         }
 
-        function stopVoice() {
-            isVoiceActive = false;
-            if (voiceAnimationId) {
-                cancelAnimationFrame(voiceAnimationId);
-                voiceAnimationId = null;
-            }
-            if (voiceStream) {
-                voiceStream.getTracks().forEach(track => track.stop());
-                voiceStream = null;
-            }
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
-            voiceStatus.textContent = 'Berhenti';
-            voiceStatus.style.color = 'rgba(0,255,136,0.2)';
-            voiceMeter.style.width = '0%';
-            voiceAdvice.innerHTML = '<span class="highlight">🎤</span> Klik Start untuk mendeteksi suara';
+        function finishVoiceScan() {
+            isVoiceScanning = false;
+            scanVoiceBtn.disabled = false;
+            voiceScanOverlay.style.display = 'none';
+            voiceTimer.textContent = '⏱ 5s';
+
+            const status = voiceScanResult || 'Normal';
+            const messages = {
+                'Serak': voiceMessages['serak'],
+                'Jernih': voiceMessages['jernih'],
+                'Terlalu Pelan': voiceMessages['pelan'],
+                'Terlalu Keras': voiceMessages['keras'],
+                'Normal': voiceMessages['normal']
+            };
+
+            voiceResultBox.classList.add('show');
+            voiceResultValue.textContent = `${status} - ${messages[status] ? messages[status].replace(/<[^>]*>/g, '') : 'Suara terdeteksi'}`;
+
+            statusDot.className = 'status-dot done';
+            statusText.textContent = 'DONE';
         }
 
         // ================================================================
@@ -1173,17 +1395,17 @@
         // ================================================================
 
         window.addEventListener('load', async function() {
-            // Daftar kamera
             await listCameras();
 
-            // Mulai webcam otomatis
             setTimeout(() => {
                 const deviceId = cameraSelect.value || null;
                 startWebcam(deviceId);
             }, 500);
 
-            // Mulai voice detection otomatis
             setTimeout(startVoice, 1000);
+
+            scanFaceBtn.disabled = true;
+            scanVoiceBtn.disabled = true;
         });
 
         window.addEventListener('beforeunload', function() {
@@ -1196,15 +1418,13 @@
             if (audioContext) {
                 audioContext.close();
             }
-        });
-
-        // Fallback jika FaceMesh loading lama
-        setTimeout(() => {
-            if (!isFaceMeshReady) {
-                loadingOverlay.style.display = 'none';
-                console.log('FaceMesh timeout - melanjutkan tanpa deteksi');
+            if (faceDetectionInterval) {
+                clearInterval(faceDetectionInterval);
             }
-        }, 15000);
+            if (voiceAnimationId) {
+                cancelAnimationFrame(voiceAnimationId);
+            }
+        });
     </script>
 
 </body>
