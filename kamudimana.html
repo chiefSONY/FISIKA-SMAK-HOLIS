@@ -21,39 +21,74 @@
             padding: 1.5rem;
             background: #0a0a0a;
             background-image: 
-                radial-gradient(ellipse at 20% 50%, rgba(0, 180, 255, 0.03) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(100, 0, 255, 0.02) 0%, transparent 50%);
+                radial-gradient(ellipse at 20% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
         }
 
         .container {
             max-width: 800px;
             width: 100%;
-            background: rgba(20, 30, 40, 0.7);
+            background: rgba(10, 20, 30, 0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 2.5rem;
-            border: 1px solid rgba(0, 200, 255, 0.1);
-            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 136, 0.08);
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 255, 136, 0.02);
             padding: 2.5rem;
             text-align: center;
         }
 
-        .title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #ffffff 30%, #7fd4ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* ===== TULISAN HIJAU NEON ===== */
+        .neon-title {
+            font-size: 4rem;
+            font-weight: 900;
             letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            color: #00ff88;
+            text-shadow: 
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 20px rgba(0, 255, 136, 0.4),
+                0 0 40px rgba(0, 255, 136, 0.3),
+                0 0 80px rgba(0, 255, 136, 0.2),
+                0 0 120px rgba(0, 255, 136, 0.1);
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                text-shadow: 
+                    0 0 10px rgba(0, 255, 136, 0.5),
+                    0 0 20px rgba(0, 255, 136, 0.4),
+                    0 0 40px rgba(0, 255, 136, 0.3),
+                    0 0 80px rgba(0, 255, 136, 0.2),
+                    0 0 120px rgba(0, 255, 136, 0.1);
+                opacity: 0.9;
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px rgba(0, 255, 136, 0.8),
+                    0 0 40px rgba(0, 255, 136, 0.6),
+                    0 0 80px rgba(0, 255, 136, 0.4),
+                    0 0 160px rgba(0, 255, 136, 0.3),
+                    0 0 240px rgba(0, 255, 136, 0.15);
+                opacity: 1;
+            }
+        }
+
+        .neon-emoji {
+            color: #00ff88;
+            text-shadow: 
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 30px rgba(0, 255, 136, 0.3);
+            animation: neonPulse 2s ease-in-out infinite alternate 0.5s;
         }
 
         .subtitle {
-            color: #6a9ab0;
-            font-size: 1rem;
+            color: rgba(0, 255, 136, 0.4);
+            font-size: 0.85rem;
+            letter-spacing: 4px;
             margin-bottom: 2rem;
-            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
         }
 
         .video-wrapper {
@@ -62,7 +97,8 @@
             background: #0a1218;
             border-radius: 1.8rem;
             overflow: hidden;
-            border: 2px solid rgba(0, 200, 255, 0.08);
+            border: 2px solid rgba(0, 255, 136, 0.06);
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.02), inset 0 0 60px rgba(0, 255, 136, 0.02);
             position: relative;
             display: flex;
             align-items: center;
@@ -79,7 +115,7 @@
 
         .video-wrapper .placeholder {
             position: absolute;
-            color: #4a7a8f;
+            color: rgba(0, 255, 136, 0.2);
             font-size: 1rem;
             display: flex;
             flex-direction: column;
@@ -91,7 +127,11 @@
 
         .video-wrapper .placeholder i {
             font-size: 4rem;
-            color: rgba(77, 184, 255, 0.1);
+            color: rgba(0, 255, 136, 0.06);
+        }
+
+        .video-wrapper .placeholder span {
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
         }
 
         .status-bar {
@@ -101,9 +141,9 @@
             gap: 1rem;
             margin-top: 1.2rem;
             padding: 0.5rem 1.5rem;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 255, 136, 0.02);
             border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 136, 0.04);
         }
 
         .status-dot {
@@ -112,7 +152,7 @@
             border-radius: 50%;
             background: #00ff88;
             animation: blink 1.4s infinite;
-            box-shadow: 0 0 16px rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 16px rgba(0, 255, 136, 0.4);
         }
 
         .status-dot.off {
@@ -127,13 +167,15 @@
         }
 
         .status-text {
-            color: #8bcbff;
+            color: rgba(0, 255, 136, 0.8);
             font-size: 0.85rem;
             font-weight: 500;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
         }
 
         .status-text.off {
             color: #ff6666;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.1);
         }
 
         .controls {
@@ -147,28 +189,30 @@
         .controls button {
             padding: 0.6rem 1.8rem;
             border-radius: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.02);
-            color: #6a9ab0;
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            background: rgba(0, 255, 136, 0.02);
+            color: rgba(0, 255, 136, 0.4);
             font-size: 0.85rem;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .controls button:hover {
-            background: rgba(0, 200, 255, 0.04);
-            border-color: rgba(0, 200, 255, 0.12);
-            color: #b0dfff;
+            background: rgba(0, 255, 136, 0.04);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: rgba(0, 255, 136, 0.7);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.02);
         }
 
         .controls button.active {
-            background: rgba(0, 200, 255, 0.08);
-            border-color: rgba(0, 200, 255, 0.15);
-            color: #7fd4ff;
+            background: rgba(0, 255, 136, 0.06);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.04);
         }
 
         .controls button i {
@@ -178,8 +222,9 @@
         .footer-note {
             margin-top: 1.5rem;
             font-size: 0.65rem;
-            color: #3a6073;
+            color: rgba(0, 255, 136, 0.15);
             letter-spacing: 0.5px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.02);
         }
 
         .footer-note i {
@@ -200,8 +245,8 @@
                 padding: 1.5rem;
                 border-radius: 1.8rem;
             }
-            .title {
-                font-size: 2.2rem;
+            .neon-title {
+                font-size: 2.4rem;
             }
             .video-wrapper {
                 aspect-ratio: 4/3;
@@ -216,7 +261,10 @@
 <body>
 
     <div class="container">
-        <div class="title">Kamu dimana sih? 🤔</div>
+        <!-- TULISAN HIJAU NEON -->
+        <div class="neon-title">
+            Kamu dimana sih? <span class="neon-emoji">🤔</span>
+        </div>
         <div class="subtitle">━━━ WEBCAM STREAMING ━━━</div>
 
         <div class="video-wrapper">
@@ -224,7 +272,7 @@
             <div class="placeholder" id="webcamPlaceholder">
                 <i class="fas fa-camera" id="placeholderIcon"></i>
                 <span id="placeholderText">Mengaktifkan webcam...</span>
-                <span style="font-size:0.7rem; opacity:0.4;">izinkan akses kamera</span>
+                <span style="font-size:0.7rem; opacity:0.3;">izinkan akses kamera</span>
             </div>
         </div>
 
