@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sony Kristanto · Physics Educator · Webcam</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Kamu dimana sih?</title>
     <style>
         * {
             margin: 0;
@@ -16,163 +12,57 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
-            background: #0b141a;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(ellipse at 20% 50%, rgba(0, 180, 255, 0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(100, 0, 255, 0.02) 0%, transparent 50%);
         }
 
-        .bg-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .container {
+            max-width: 800px;
             width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .bg-glow {
-            position: fixed;
-            top: -20%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 150, 255, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-            animation: pulseGlow 8s ease-in-out infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            0% {
-                opacity: 0.4;
-                transform: scale(1);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
-        }
-
-        .main-container {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.8rem;
-            align-items: stretch;
-        }
-
-        .card {
-            background: rgba(10, 20, 30, 0.6);
-            backdrop-filter: blur(24px) saturate(1.2);
-            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            background: rgba(20, 30, 40, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 2.5rem;
-            border: 1px solid rgba(0, 200, 255, 0.15);
+            border: 1px solid rgba(0, 200, 255, 0.1);
             box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
-            padding: 2.8rem 2.8rem 2.5rem;
-            transition: transform 0.4s ease;
+            padding: 2.5rem;
+            text-align: center;
         }
 
-        .card:hover {
-            transform: translateY(-4px);
+        .title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 30%, #7fd4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
         }
 
-        .stream-panel {
-            background: rgba(10, 20, 30, 0.5);
-            backdrop-filter: blur(20px) saturate(1.1);
-            -webkit-backdrop-filter: blur(20px) saturate(1.1);
-            border-radius: 2.5rem;
-            border: 1px solid rgba(0, 200, 255, 0.12);
-            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
-            padding: 1.8rem;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.4s ease;
-        }
-
-        .stream-panel:hover {
-            transform: translateY(-4px);
-        }
-
-        .stream-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .stream-header .title {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            color: #b0dfff;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .stream-header .title i {
-            color: #4db8ff;
-            font-size: 1.2rem;
-        }
-
-        .stream-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
+        .subtitle {
             color: #6a9ab0;
-            background: rgba(0, 200, 255, 0.04);
-            padding: 0.2rem 0.8rem 0.2rem 0.6rem;
-            border-radius: 40px;
-            border: 1px solid rgba(0, 200, 255, 0.06);
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #00ff88;
-            animation: blink 1.4s infinite;
-            box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
-        }
-
-        .status-dot.off {
-            background: #ff4444;
-            animation: none;
-            box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
-        }
-
-        @keyframes blink {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.2;
-            }
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            letter-spacing: 2px;
         }
 
         .video-wrapper {
-            flex: 1;
-            min-height: 400px;
-            background: rgba(0, 0, 0, 0.4);
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #0a1218;
             border-radius: 1.8rem;
             overflow: hidden;
-            border: 1px solid rgba(0, 200, 255, 0.06);
+            border: 2px solid rgba(0, 200, 255, 0.08);
             position: relative;
             display: flex;
             align-items: center;
@@ -190,472 +80,109 @@
         .video-wrapper .placeholder {
             position: absolute;
             color: #4a7a8f;
-            font-size: 0.9rem;
+            font-size: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.8rem;
             pointer-events: none;
             text-align: center;
-            padding: 1rem;
         }
 
         .video-wrapper .placeholder i {
-            font-size: 3rem;
-            color: rgba(77, 184, 255, 0.15);
+            font-size: 4rem;
+            color: rgba(77, 184, 255, 0.1);
         }
 
-        .video-label {
-            position: absolute;
-            top: 0.8rem;
-            left: 1rem;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            font-size: 0.65rem;
-            color: #8bcbff;
-            border: 1px solid rgba(0, 200, 255, 0.08);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            z-index: 2;
-        }
-
-        .video-label i {
-            font-size: 0.6rem;
-            color: #4db8ff;
-        }
-
-        .stream-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .stream-controls .info {
-            font-size: 0.75rem;
-            color: #4a7a8f;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .stream-controls .info i {
-            color: #4db8ff;
-        }
-
-        .stream-controls .actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .stream-controls .actions button {
-            color: #6a9ab0;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .stream-controls .actions button:hover {
-            background: rgba(0, 200, 255, 0.04);
-            border-color: rgba(0, 200, 255, 0.1);
-            color: #b0dfff;
-        }
-
-        .stream-controls .actions button.active {
-            background: rgba(0, 200, 255, 0.08);
-            border-color: rgba(0, 200, 255, 0.15);
-            color: #7fd4ff;
-        }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 1.4rem;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .avatar {
-            width: 4.8rem;
-            height: 4.8rem;
-            border-radius: 1.8rem;
-            background: linear-gradient(135deg, rgba(0, 200, 255, 0.15), rgba(100, 0, 255, 0.15));
-            border: 1px solid rgba(0, 200, 255, 0.25);
+        .status-bar {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.4rem;
-            color: #7fd4ff;
-            box-shadow: 0 0 30px rgba(0, 150, 255, 0.08);
+            gap: 1rem;
+            margin-top: 1.2rem;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .name-title h1 {
-            font-size: 2.6rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #ffffff 30%, #7fd4ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.1;
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: blink 1.4s infinite;
+            box-shadow: 0 0 16px rgba(0, 255, 136, 0.3);
         }
 
-        .name-title .badge {
+        .status-dot.off {
+            background: #ff4444;
+            animation: none;
+            box-shadow: 0 0 16px rgba(255, 68, 68, 0.3);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .status-text {
+            color: #8bcbff;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-text.off {
+            color: #ff6666;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            color: #6a9ab0;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(0, 200, 255, 0.08);
-            padding: 0.2rem 1rem 0.2rem 0.8rem;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #8bcbff;
-            border: 1px solid rgba(0, 200, 255, 0.1);
-            margin-top: 0.2rem;
         }
 
-        .badge i {
-            color: #4db8ff;
-            font-size: 0.7rem;
-        }
-
-        .profesi-block {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            background: linear-gradient(135deg, rgba(0, 180, 255, 0.12), rgba(80, 0, 255, 0.08));
-            padding: 0.6rem 1.8rem 0.6rem 1.4rem;
-            border-radius: 60px;
-            border: 1px solid rgba(0, 200, 255, 0.2);
-            margin: 0.8rem 0 1.2rem 0;
-        }
-
-        .profesi-block i {
-            color: #4db8ff;
-            font-size: 1.4rem;
-        }
-
-        .profesi-block span {
-            color: #e8f4ff;
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: -0.01em;
-        }
-
-        .profesi-block .sub {
-            font-weight: 300;
-            font-size: 0.95rem;
-            color: #8bcbff;
-            margin-left: 0.2rem;
-            opacity: 0.8;
-        }
-
-        .school-block {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.7rem;
-            background: rgba(0, 255, 200, 0.04);
-            padding: 0.4rem 1.4rem 0.4rem 1rem;
-            border-radius: 40px;
-            border: 1px solid rgba(0, 255, 200, 0.08);
-            margin-top: -0.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .school-block i {
-            color: #4dd4ff;
-            font-size: 1rem;
-        }
-
-        .school-block .school-name {
-            color: #b0dfff;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .school-block .brand {
-            color: #7fd4ff;
-            font-weight: 700;
-            font-size: 0.8rem;
-            background: rgba(0, 200, 255, 0.08);
-            padding: 0.1rem 0.8rem;
-            border-radius: 30px;
-            border: 1px solid rgba(0, 200, 255, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .bio {
-            margin: 1.2rem 0 1.8rem 0;
-        }
-
-        .bio p {
-            font-size: 1.05rem;
-            color: #c8dce8;
-            font-weight: 400;
-            line-height: 1.6;
-            max-width: 90%;
-            padding: 0.4rem 0;
-            border-left: 2px solid rgba(0, 200, 255, 0.15);
-            padding-left: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .bio p i {
-            color: #4db8ff;
-            margin-right: 0.6rem;
-            opacity: 0.7;
-        }
-
-        .spec-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 0.7rem;
-            margin: 1.8rem 0 1.8rem 0;
-        }
-
-        .spec-item {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 40px;
-            padding: 0.6rem 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-weight: 400;
-            color: #bdd8e8;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 0.85rem;
-            transition: 0.2s ease;
-        }
-
-        .spec-item i {
-            color: #4db8ff;
-            font-size: 1rem;
-            width: 1.2rem;
-            text-align: center;
-        }
-
-        .spec-item:hover {
+        .controls button:hover {
             background: rgba(0, 200, 255, 0.04);
             border-color: rgba(0, 200, 255, 0.12);
-            transform: translateY(-2px);
-        }
-
-        .quote {
-            margin: 1.6rem 0 2rem 0;
-            padding: 1.2rem 2rem;
-            background: rgba(0, 200, 255, 0.02);
-            border-radius: 30px;
-            border: 1px solid rgba(0, 200, 255, 0.04);
-            border-left: 3px solid rgba(0, 200, 255, 0.25);
-            font-style: italic;
-            color: #c0dcec;
-            font-weight: 300;
-            font-size: 1.05rem;
-            text-align: center;
-        }
-
-        .quote i {
-            color: #4db8ff;
-            margin-right: 0.6rem;
-            opacity: 0.6;
-        }
-
-        .quote .highlight {
-            color: #7fd4ff;
-            font-weight: 600;
-            font-style: normal;
-        }
-
-        .social-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.7rem 1rem;
-            margin-top: 1rem;
-            align-items: center;
-        }
-
-        .social-links a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
             color: #b0dfff;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 0.4rem 1.2rem 0.4rem 1rem;
-            border-radius: 50px;
-            font-weight: 400;
-            font-size: 0.85rem;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.25s ease;
         }
 
-        .social-links a i {
-            font-size: 1.1rem;
-            color: #4db8ff;
-        }
-
-        .social-links a:hover {
-            background: rgba(0, 200, 255, 0.06);
+        .controls button.active {
+            background: rgba(0, 200, 255, 0.08);
             border-color: rgba(0, 200, 255, 0.15);
-            transform: translateY(-2px);
-            color: #e8f4ff;
-        }
-
-        .social-links .btn-email {
-            background: rgba(0, 180, 255, 0.06);
-            border-color: rgba(0, 180, 255, 0.12);
-        }
-
-        .social-links .btn-email i {
             color: #7fd4ff;
         }
 
-        .social-links .btn-email:hover {
-            background: rgba(0, 180, 255, 0.12);
-            border-color: rgba(0, 180, 255, 0.25);
+        .controls button i {
+            font-size: 0.9rem;
         }
 
         .footer-note {
-            margin-top: 2.2rem;
-            font-size: 0.7rem;
-            color: #4a7a8f;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            padding-top: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            margin-top: 1.5rem;
+            font-size: 0.65rem;
+            color: #3a6073;
             letter-spacing: 0.5px;
         }
 
         .footer-note i {
-            margin-right: 0.3rem;
-            color: #3a7a8f;
-        }
-
-        .school-building {
-            margin: 1.2rem 0 0.2rem 0;
-            border-radius: 2rem;
-            overflow: hidden;
-            background: linear-gradient(135deg, rgba(0, 40, 60, 0.3), rgba(10, 20, 40, 0.5));
-            border: 1px solid rgba(0, 200, 255, 0.06);
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.8rem 1.5rem;
-        }
-
-        .building-visual {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1.8rem;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .building-icon {
-            font-size: 3.2rem;
-            color: rgba(77, 184, 255, 0.12);
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-        }
-
-        .building-info {
-            text-align: left;
-            flex: 1;
-            min-width: 160px;
-        }
-
-        .building-info .name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #d4ecff;
-        }
-
-        .building-info .name i {
-            color: #4db8ff;
-            margin-right: 0.4rem;
-            font-size: 0.9rem;
-        }
-
-        .building-info .address {
-            font-size: 0.75rem;
-            color: #6a9ab0;
-            margin-top: 0.1rem;
-            font-weight: 300;
-        }
-
-        .building-info .brand-tag {
-            display: inline-block;
-            margin-top: 0.2rem;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #4db8ff;
-            background: rgba(0, 200, 255, 0.06);
-            padding: 0.1rem 0.8rem;
-            border-radius: 30px;
-            border: 1px solid rgba(0, 200, 255, 0.06);
-        }
-
-        .school-badge-foto {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: rgba(0, 200, 255, 0.04);
-            padding: 0.1rem 0.8rem 0.1rem 0.6rem;
-            border-radius: 40px;
-            border: 1px solid rgba(0, 200, 255, 0.06);
-            margin-top: 0.2rem;
-        }
-
-        .school-badge-foto i {
-            color: #4db8ff;
-            font-size: 0.6rem;
-        }
-
-        .school-badge-foto span {
-            color: #7fd4ff;
-            font-weight: 600;
-            font-size: 0.65rem;
-            letter-spacing: 0.5px;
-        }
-
-        .building-line {
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.06), transparent);
-            margin: 0.2rem 0;
-        }
-
-        .stream-footer {
-            margin-top: 0.8rem;
-            font-size: 0.65rem;
-            color: #3a6073;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-            padding-top: 0.8rem;
-        }
-
-        .stream-footer i {
             margin-right: 0.3rem;
         }
 
@@ -664,212 +191,65 @@
         }
 
         @keyframes fa-spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                max-width: 800px;
-            }
-            .stream-panel {
-                order: 2;
-            }
-            .card {
-                order: 1;
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 600px) {
-            .card {
-                padding: 1.8rem 1.2rem;
+            .container {
+                padding: 1.5rem;
                 border-radius: 1.8rem;
             }
-            .stream-panel {
-                padding: 1.2rem;
-                border-radius: 1.8rem;
-            }
-            .name-title h1 {
-                font-size: 2rem;
-            }
-            .profesi-block span {
-                font-size: 1.1rem;
-            }
-            .bio p {
-                max-width: 100%;
-                font-size: 0.95rem;
-                padding-left: 0.8rem;
-            }
-            .spec-grid {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            }
-            .building-visual {
-                flex-direction: column;
-                text-align: center;
-            }
-            .building-info {
-                text-align: center;
-            }
-            .social-links a {
-                font-size: 0.8rem;
-                padding: 0.3rem 0.9rem;
-            }
-            .quote {
-                font-size: 0.95rem;
-                padding: 0.8rem 1.2rem;
+            .title {
+                font-size: 2.2rem;
             }
             .video-wrapper {
-                min-height: 250px;
+                aspect-ratio: 4/3;
+            }
+            .controls button {
+                padding: 0.4rem 1.2rem;
+                font-size: 0.75rem;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-grid"></div>
-    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="title">Kamu dimana sih? 🤔</div>
+        <div class="subtitle">━━━ WEBCAM STREAMING ━━━</div>
 
-    <div class="main-container">
-        <!-- PROFIL -->
-        <div class="card">
-            <div class="profile-header">
-                <div class="avatar">
-                    <i class="fas fa-user-astronaut"></i>
-                </div>
-                <div class="name-title">
-                    <h1>Sony Kristanto</h1>
-                    <div class="badge">
-                        <i class="fas fa-map-pin"></i> Bandung · Indonesia
-                    </div>
-                </div>
-            </div>
-
-            <div class="profesi-block">
-                <i class="fas fa-atom"></i>
-                <span>Physics Educator</span>
-                <span class="sub">· membangun generasi saintis</span>
-            </div>
-
-            <div class="school-block">
-                <i class="fas fa-school"></i>
-                <span class="school-name">SMA BPK PENABUR HOLIS</span>
-                <span class="brand"><i class="fas fa-rocket" style="margin-right: 4px;"></i> School of Future</span>
-            </div>
-
-            <div class="bio">
-                <p>
-                    <i class="fas fa-quote-left" style="opacity: 0.5;"></i>
-                    Membimbing generasi memahami alam semesta, satu eksperimen dan persamaan pada satu waktu.
-                </p>
-            </div>
-
-            <div class="school-building">
-                <div class="building-visual">
-                    <div class="building-icon">
-                        <i class="fas fa-building"></i>
-                        <i class="fas fa-school" style="opacity: 0.7;"></i>
-                        <i class="fas fa-graduation-cap" style="opacity: 0.5;"></i>
-                    </div>
-                    <div class="building-info">
-                        <div class="name">
-                            <i class="fas fa-location-dot"></i> SMA BPK PENABUR HOLIS
-                        </div>
-                        <div class="address">
-                            Komplek Taman Holis Indah Blok A, Cigondewah Kidul, Bandung Kulon, Kota Bandung 40214
-                        </div>
-                        <div class="brand-tag">
-                            <i class="fas fa-arrow-right"></i> School of Future · Center of Excellence
-                        </div>
-                        <div class="school-badge-foto">
-                            <i class="fas fa-star"></i>
-                            <span>SCHOOL OF FUTURE · LIGHTS the Future</span>
-                            <i class="fas fa-star" style="opacity: 0.5;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="building-line"></div>
-
-            <div class="spec-grid">
-                <div class="spec-item"><i class="fas fa-gear"></i> Mekanika</div>
-                <div class="spec-item"><i class="fas fa-arrows-spin"></i> Kinematika</div>
-                <div class="spec-item"><i class="fas fa-eye"></i> Optik</div>
-                <div class="spec-item"><i class="fas fa-bolt"></i> Elektromagnetik</div>
-            </div>
-
-            <div class="quote">
-                <i class="fas fa-quote-right"></i>
-                “Jangan hanya mengejar <span class="highlight">NILAI</span>, tetapi jadikanlah hidupmu <span class="highlight">BERNILAI</span>”
-            </div>
-
-            <div class="social-links">
-                <a href="#" class="btn-email"><i class="fas fa-envelope"></i> sony.kristanto@edu.id</a>
-                <a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a>
-                <a href="#"><i class="fab fa-twitter"></i> X</a>
-                <a href="#"><i class="fab fa-github"></i> GitHub</a>
-                <a href="#"><i class="fas fa-globe"></i> Portofolio</a>
-            </div>
-
-            <div class="footer-note">
-                <span><i class="fas fa-graduation-cap"></i> Physics Educator · Sony Kristanto</span>
-                <span><i class="fas fa-feather-alt"></i> 2026 · SMA BPK PENABUR HOLIS · School of Future</span>
+        <div class="video-wrapper">
+            <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
+            <div class="placeholder" id="webcamPlaceholder">
+                <i class="fas fa-camera" id="placeholderIcon"></i>
+                <span id="placeholderText">Mengaktifkan webcam...</span>
+                <span style="font-size:0.7rem; opacity:0.4;">izinkan akses kamera</span>
             </div>
         </div>
 
-        <!-- STREAMING WEBCAM -->
-        <div class="stream-panel">
-            <div class="stream-header">
-                <div class="title">
-                    <i class="fas fa-video"></i>
-                    <span>Webcam Streaming</span>
-                </div>
-                <div class="stream-status">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">Loading...</span>
-                    <span style="opacity:0.5; margin-left: 0.2rem;">·</span>
-                    <span style="opacity:0.6;">Webcam</span>
-                </div>
-            </div>
+        <div class="status-bar">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">Loading...</span>
+        </div>
 
-            <div class="video-wrapper">
-                <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
-                <div class="placeholder" id="webcamPlaceholder">
-                    <i class="fas fa-camera" id="placeholderIcon"></i>
-                    <span id="placeholderText">Mengaktifkan webcam...</span>
-                    <span style="font-size:0.65rem; opacity:0.5;">izinkan akses kamera</span>
-                </div>
-                <div class="video-label">
-                    <i class="fas fa-camera"></i> Webcam · lokal
-                </div>
-            </div>
+        <div class="controls">
+            <button id="toggleBtn" onclick="toggleWebcam()">
+                <i class="fas fa-stop"></i> Stop
+            </button>
+            <button onclick="captureSnapshot()">
+                <i class="fas fa-camera"></i> Snapshot
+            </button>
+        </div>
 
-            <div class="stream-controls">
-                <div class="info">
-                    <i class="fas fa-circle" id="statusIcon" style="color: #ffaa00; font-size: 0.5rem;"></i>
-                    <span id="statusInfo">Mengaktifkan webcam...</span>
-                </div>
-                <div class="actions">
-                    <button id="toggleBtn" onclick="toggleWebcam()">
-                        <i class="fas fa-stop"></i> Stop
-                    </button>
-                    <button onclick="captureSnapshot()">
-                        <i class="fas fa-camera"></i> Snapshot
-                    </button>
-                </div>
-            </div>
-
-            <div class="stream-footer">
-                <i class="fas fa-shield-alt"></i>
-                Stream aman · Untuk keperluan presentasi & pembelajaran
-            </div>
+        <div class="footer-note">
+            <i class="fas fa-shield-alt"></i>
+            Streaming aman · hanya untuk keperluan presentasi
         </div>
     </div>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <script>
         let stream = null;
@@ -881,8 +261,6 @@
         const toggleBtn = document.getElementById('toggleBtn');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
-        const statusInfo = document.getElementById('statusInfo');
-        const statusIcon = document.getElementById('statusIcon');
 
         // ===== START WEBCAM OTOMATIS =====
         window.addEventListener('load', function() {
@@ -893,8 +271,7 @@
             try {
                 statusDot.className = 'status-dot off';
                 statusText.textContent = 'Loading...';
-                statusInfo.textContent = 'Mengakses webcam...';
-                statusIcon.style.color = '#ffaa00';
+                statusText.className = 'status-text';
                 placeholderText.textContent = 'Mengaktifkan webcam...';
                 placeholderIcon.className = 'fas fa-spinner fa-spin';
                 placeholder.style.display = 'flex';
@@ -918,11 +295,10 @@
                 isStreaming = true;
 
                 toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
-                toggleBtn.classList.add('active');
+                toggleBtn.className = 'active';
                 statusDot.className = 'status-dot';
                 statusText.textContent = 'LIVE';
-                statusInfo.textContent = 'Webcam aktif';
-                statusIcon.style.color = '#00ff88';
+                statusText.className = 'status-text';
                 placeholderIcon.className = 'fas fa-camera';
 
             } catch (err) {
@@ -933,9 +309,9 @@
                 placeholderIcon.className = 'fas fa-exclamation-triangle';
                 statusDot.className = 'status-dot off';
                 statusText.textContent = 'ERROR';
-                statusInfo.textContent = 'Gagal akses webcam';
-                statusIcon.style.color = '#ff4444';
+                statusText.className = 'status-text off';
                 toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+                toggleBtn.className = '';
 
                 if (err.name === 'NotAllowedError') {
                     placeholderText.textContent = '⚠️ Izin kamera ditolak';
@@ -967,11 +343,10 @@
             isStreaming = false;
 
             toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
-            toggleBtn.classList.remove('active');
+            toggleBtn.className = '';
             statusDot.className = 'status-dot off';
             statusText.textContent = 'OFF';
-            statusInfo.textContent = 'Webcam tidak aktif';
-            statusIcon.style.color = '#ff4444';
+            statusText.className = 'status-text off';
         }
 
         // ===== SNAPSHOT =====
@@ -994,4 +369,12 @@
         }
 
         // Matikan webcam saat halaman ditutup
-        window.addEventListener('beforeunload',
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+
+</body>
+</html>
