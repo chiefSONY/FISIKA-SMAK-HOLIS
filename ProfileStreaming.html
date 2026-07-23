@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sony Kristanto · Physics Educator · ESP-CAM</title>
+    <title>Sony Kristanto · Physics Educator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
@@ -23,9 +23,6 @@
             justify-content: center;
             padding: 1.5rem;
             background: #0b141a;
-            background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(0, 180, 255, 0.06) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(100, 0, 255, 0.05) 0%, transparent 50%);
         }
 
         .bg-grid {
@@ -84,7 +81,7 @@
             -webkit-backdrop-filter: blur(24px) saturate(1.2);
             border-radius: 2.5rem;
             border: 1px solid rgba(0, 200, 255, 0.15);
-            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
             padding: 2.8rem 2.8rem 2.5rem;
             transition: transform 0.4s ease;
         }
@@ -161,12 +158,6 @@
             box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
         }
 
-        .status-dot.loading {
-            background: #ffaa00;
-            animation: blink 0.8s infinite;
-            box-shadow: 0 0 12px rgba(255, 170, 0, 0.3);
-        }
-
         @keyframes blink {
             0%,
             100% {
@@ -202,7 +193,7 @@
             position: absolute;
             color: #4a7a8f;
             font-size: 0.9rem;
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             gap: 0.6rem;
@@ -369,7 +360,6 @@
             border-radius: 60px;
             border: 1px solid rgba(0, 200, 255, 0.2);
             margin: 0.8rem 0 1.2rem 0;
-            backdrop-filter: blur(4px);
         }
 
         .profesi-block i {
@@ -458,7 +448,6 @@
 
         .spec-item {
             background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(4px);
             border-radius: 40px;
             padding: 0.6rem 1.2rem;
             display: flex;
@@ -525,7 +514,6 @@
             text-decoration: none;
             color: #b0dfff;
             background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(4px);
             padding: 0.4rem 1.2rem 0.4rem 1rem;
             border-radius: 50px;
             font-weight: 400;
@@ -868,16 +856,14 @@
                 </div>
             </div>
 
-            <!-- ESP Stream -->
             <div class="video-wrapper">
                 <img id="espStream"
                 src="http://10.101.209.119/"
                 alt="ESP32 Stream"
-                style="width:100%; height:100%; object-fit:contain; display:none;"
-                onerror="handleStreamError()">
+                style="width:100%; height:100%; object-fit:contain; display:none;">
                 <div class="placeholder" id="espPlaceholder" style="display:flex;">
-                    <i class="fas fa-microchip" id="placeholderIcon"></i>
-                    <span id="placeholderText">Menghubungkan ke ESP...</span>
+                    <i class="fas fa-microchip"></i>
+                    <span>Menghubungkan ke ESP...</span>
                     <span style="font-size:0.65rem; opacity:0.5;">http://10.101.209.119/</span>
                 </div>
                 <div class="video-label">
@@ -885,7 +871,6 @@
                 </div>
             </div>
 
-            <!-- Kontrol -->
             <div class="stream-controls">
                 <div class="info">
                     <i class="fas fa-circle" id="statusIcon" style="color: #ffaa00; font-size: 0.5rem;"></i>
@@ -893,7 +878,7 @@
                 </div>
                 <div class="actions">
                     <button onclick="refreshStream()">
-                        <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                     <a href="http://10.101.209.119/" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Buka
@@ -911,29 +896,22 @@
     <script>
         const img = document.getElementById('espStream');
         const placeholder = document.getElementById('espPlaceholder');
-        const placeholderText = document.getElementById('placeholderText');
-        const placeholderIcon = document.getElementById('placeholderIcon');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         const statusInfo = document.getElementById('statusInfo');
         const statusIcon = document.getElementById('statusIcon');
-        const refreshIcon = document.getElementById('refreshIcon');
 
-        let loadAttempts = 0;
+        let attempts = 0;
         const maxAttempts = 3;
 
-        // ===== LOAD STREAM =====
         function loadStream() {
-            statusDot.className = 'status-dot loading';
+            statusDot.className = 'status-dot off';
             statusText.textContent = 'Loading...';
             statusInfo.textContent = 'Menghubungkan ke ESP...';
             statusIcon.style.color = '#ffaa00';
-            placeholderText.textContent = 'Menghubungkan ke ESP...';
-            placeholderIcon.className = 'fas fa-spinner fa-spin';
             placeholder.style.display = 'flex';
             img.style.display = 'none';
 
-            // Tambahkan timestamp untuk menghindari cache
             const timestamp = new Date().getTime();
             img.src = 'http://10.101.209.119/?t=' + timestamp;
 
@@ -944,75 +922,44 @@
                 statusText.textContent = 'LIVE';
                 statusInfo.textContent = 'Streaming dari ESP';
                 statusIcon.style.color = '#00ff88';
-                placeholderIcon.className = 'fas fa-microchip';
-                loadAttempts = 0;
+                attempts = 0;
             };
 
             img.onerror = function() {
-                handleStreamError();
+                attempts++;
+                if (attempts < maxAttempts) {
+                    setTimeout(loadStream, 2000);
+                } else {
+                    img.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    statusDot.className = 'status-dot off';
+                    statusText.textContent = 'OFFLINE';
+                    statusInfo.textContent = 'ESP tidak terhubung';
+                    statusIcon.style.color = '#ff4444';
+                }
             };
 
-            // Timeout jika terlalu lama
             setTimeout(() => {
-                if (img.style.display !== 'block') {
-                    handleStreamError();
+                if (img.style.display !== 'block' && attempts < maxAttempts) {
+                    img.onerror();
                 }
             }, 5000);
         }
 
-        // ===== HANDLE ERROR =====
-        function handleStreamError() {
-            loadAttempts++;
-            if (loadAttempts < maxAttempts) {
-                placeholderText.textContent = `Mencoba ulang (${loadAttempts}/${maxAttempts})...`;
-                setTimeout(loadStream, 2000);
-            } else {
-                img.style.display = 'none';
-                placeholder.style.display = 'flex';
-                placeholderText.textContent = '⚠️ ESP stream tidak tersedia';
-                placeholderIcon.className = 'fas fa-exclamation-triangle';
-                statusDot.className = 'status-dot off';
-                statusText.textContent = 'OFFLINE';
-                statusInfo.textContent = 'ESP tidak terhubung';
-                statusIcon.style.color = '#ff4444';
-                refreshIcon.className = 'fas fa-sync-alt';
-            }
-        }
-
-        // ===== REFRESH STREAM =====
         function refreshStream() {
-            refreshIcon.className = 'fas fa-sync-alt fa-spin';
-            loadAttempts = 0;
+            attempts = 0;
             loadStream();
-            setTimeout(() => {
-                refreshIcon.className = 'fas fa-sync-alt';
-            }, 3000);
         }
 
-        // ===== AUTO REFRESH =====
-        let autoRefreshInterval;
-
-        function startAutoRefresh() {
-            autoRefreshInterval = setInterval(() => {
-                if (img.style.display === 'block') {
-                    const timestamp = new Date().getTime();
-                    img.src = 'http://10.101.209.119/?t=' + timestamp;
-                }
-            }, 10000);
-        }
-
-        // ===== INIT =====
-        window.addEventListener('load', function() {
-            loadStream();
-            startAutoRefresh();
-        });
-
-        // Bersihkan interval saat halaman ditutup
-        window.addEventListener('beforeunload', function() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
+        // Auto refresh setiap 10 detik
+        setInterval(() => {
+            if (img.style.display === 'block') {
+                const timestamp = new Date().getTime();
+                img.src = 'http://10.101.209.119/?t=' + timestamp;
             }
-        });
+        }, 10000);
+
+        window.addEventListener('load', loadStream);
     </script>
 
 </body>
