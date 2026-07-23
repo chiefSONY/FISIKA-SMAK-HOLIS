@@ -1,132 +1,1121 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Bagaimana kondisimu?</title>
-  <style>
-    body {
-      background-color: black;
-      color: #39ff14; /* hijau neon */
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    h1 {
-      text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
-    }
-    video {
-      border: 2px solid #39ff14;
-      border-radius: 10px;
-      margin-top: 20px;
-    }
-    #output {
-      margin-top: 20px;
-      font-size: 1.5em;
-      text-shadow: 0 0 5px #39ff14;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bagaimana kondisimu? · Face & Voice Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #0a0a0a;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.5rem 0 2rem 0;
+        }
+
+        .neon-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #00ff88;
+            text-shadow:
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 20px rgba(0, 255, 136, 0.4),
+                0 0 40px rgba(0, 255, 136, 0.3),
+                0 0 80px rgba(0, 255, 136, 0.2),
+                0 0 120px rgba(0, 255, 136, 0.1);
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                text-shadow:
+                    0 0 10px rgba(0, 255, 136, 0.5),
+                    0 0 20px rgba(0, 255, 136, 0.4),
+                    0 0 40px rgba(0, 255, 136, 0.3),
+                    0 0 80px rgba(0, 255, 136, 0.2),
+                    0 0 120px rgba(0, 255, 136, 0.1);
+                opacity: 0.9;
+            }
+            100% {
+                text-shadow:
+                    0 0 20px rgba(0, 255, 136, 0.8),
+                    0 0 40px rgba(0, 255, 136, 0.6),
+                    0 0 80px rgba(0, 255, 136, 0.4),
+                    0 0 160px rgba(0, 255, 136, 0.3),
+                    0 0 240px rgba(0, 255, 136, 0.15);
+                opacity: 1;
+            }
+        }
+
+        .neon-emoji {
+            color: #00ff88;
+            text-shadow:
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 30px rgba(0, 255, 136, 0.3);
+            animation: neonPulse 2s ease-in-out infinite alternate 0.5s;
+        }
+
+        .subtitle {
+            color: rgba(0, 255, 136, 0.2);
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            margin-top: 0.3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: rgba(10, 20, 30, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card .card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: rgba(0, 255, 136, 0.6);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card .card-title i {
+            font-size: 1rem;
+            color: rgba(0, 255, 136, 0.3);
+        }
+
+        .video-wrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #0a1218;
+        }
+
+        .video-wrapper canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .video-wrapper .placeholder {
+            position: absolute;
+            color: rgba(0, 255, 136, 0.15);
+            font-size: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .video-wrapper .placeholder i {
+            font-size: 3.5rem;
+            color: rgba(0, 255, 136, 0.05);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+            border-radius: 1.5rem;
+        }
+
+        .loading-overlay .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 255, 136, 0.05);
+            border-top: 3px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay .load-text {
+            color: rgba(0, 255, 136, 0.3);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 0.4rem 1rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: blink 1.4s infinite;
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+        }
+
+        .status-dot.off {
+            background: #ff4444;
+            animation: none;
+            box-shadow: 0 0 12px rgba(255, 68, 68, 0.3);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .status-text {
+            color: rgba(0, 255, 136, 0.6);
+            font-size: 0.8rem;
+        }
+
+        .emotion-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding: 0.6rem 1.5rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .emotion-label {
+            color: rgba(0, 255, 136, 0.2);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .emotion-value {
+            color: #00ff88;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+            min-width: 100px;
+        }
+
+        .emotion-emoji {
+            font-size: 2rem;
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        .advice-box {
+            margin-top: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            border-left: 3px solid rgba(0, 255, 136, 0.15);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .advice-box .advice-icon {
+            font-size: 1.5rem;
+            color: rgba(0, 255, 136, 0.1);
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .advice-box .advice-text {
+            color: rgba(0, 255, 136, 0.6);
+            font-size: 1rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .advice-box .advice-text .highlight {
+            color: #00ff88;
+            font-weight: 600;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+        }
+
+        .voice-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding: 0.6rem 1.5rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .voice-label {
+            color: rgba(0, 255, 136, 0.2);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .voice-value {
+            color: #7fd4ff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .voice-meter {
+            width: 120px;
+            height: 6px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .voice-meter .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #7fd4ff);
+            border-radius: 10px;
+            transition: width 0.1s;
+            width: 0%;
+        }
+
+        .voice-icon {
+            font-size: 1.5rem;
+            color: rgba(0, 255, 136, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            background: rgba(0, 255, 136, 0.02);
+            color: rgba(0, 255, 136, 0.4);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls button:hover {
+            background: rgba(0, 255, 136, 0.04);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: rgba(0, 255, 136, 0.7);
+        }
+
+        .controls button.active {
+            background: rgba(0, 255, 136, 0.06);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .controls button i {
+            font-size: 0.8rem;
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.6rem;
+            color: rgba(0, 255, 136, 0.08);
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .neon-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0.8rem;
+            }
+            .card {
+                padding: 1rem;
+                border-radius: 1.5rem;
+            }
+            .neon-title {
+                font-size: 2rem;
+            }
+            .video-wrapper {
+                aspect-ratio: 4/3;
+            }
+            .emotion-display,
+            .voice-display {
+                padding: 0.4rem 1rem;
+                gap: 0.8rem;
+            }
+            .emotion-value,
+            .voice-value {
+                font-size: 1rem;
+                min-width: 70px;
+            }
+            .advice-box .advice-text {
+                font-size: 0.9rem;
+            }
+            .voice-meter {
+                width: 80px;
+            }
+            .controls button {
+                padding: 0.4rem 1rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Bagaimana kondisimu?</h1>
-  <video id="video" autoplay playsinline width="640" height="480"></video>
-  <div id="output">Mendeteksi kondisi...</div>
 
-  <script type="module">
-    import "@mediapipe/camera_utils/camera_utils.js";
-    import "@mediapipe/drawing_utils/drawing_utils.js";
-    import "@mediapipe/face_mesh/face_mesh.js";
+    <div class="bg-grid"></div>
 
-    const videoElement = document.getElementById('video');
-    const outputElement = document.getElementById('output');
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="neon-title">
+                Bagaimana kondisimu? <span class="neon-emoji">🤔</span>
+            </div>
+            <div class="subtitle">━━━ FACE &amp; VOICE DETECTION ━━━</div>
+        </div>
 
-    // Inisialisasi FaceMesh
-    const faceMesh = new FaceMesh.FaceMesh({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-    });
-    faceMesh.setOptions({
-      maxNumFaces: 1,
-      refineLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
+        <!-- GRID -->
+        <div class="grid-2">
+            <!-- KOLOM KIRI: WEBCAM + FACE -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-smile"></i> Deteksi Wajah
+                    <span style="font-size:0.6rem; color:rgba(0,255,136,0.1);">FaceMesh</span>
+                </div>
 
-    faceMesh.onResults(onResults);
+                <div class="video-wrapper">
+                    <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
+                    <canvas id="faceCanvas" style="display:none;"></canvas>
 
-    const camera = new CameraUtils.Camera(videoElement, {
-      onFrame: async () => {
-        await faceMesh.send({image: videoElement});
-      },
-      width: 640,
-      height: 480
-    });
-    camera.start();
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                        <div class="load-text">Memuat FaceMesh...</div>
+                    </div>
 
-    function onResults(results) {
-      if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-        outputElement.innerText = "Wajah tidak terdeteksi.";
-        return;
-      }
-      // --- Analisis ekspresi sederhana (dummy rule) ---
-      const landmarks = results.multiFaceLandmarks[0];
-      const mouthOpen = landmarks[13].y - landmarks[14].y;
+                    <div class="placeholder" id="webcamPlaceholder">
+                        <i class="fas fa-camera" id="placeholderIcon"></i>
+                        <span id="placeholderText">Mengaktifkan webcam...</span>
+                        <span style="font-size:0.7rem; opacity:0.3;">izinkan akses kamera</span>
+                    </div>
+                </div>
 
-      let ekspresi = "biasa";
-      if (mouthOpen > 0.05) ekspresi = "senang";
-      else if (mouthOpen < 0.01) ekspresi = "sedih";
+                <div class="status-bar">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Loading...</span>
+                    <span style="color:rgba(0,255,136,0.05);">|</span>
+                    <span style="color:rgba(0,255,136,0.1); font-size:0.7rem;">FACE</span>
+                    <span class="status-text" id="faceStatus" style="font-size:0.7rem; color:rgba(0,255,136,0.2);">Tidak terdeteksi</span>
+                </div>
 
-      switch (ekspresi) {
-        case "sedih":
-          outputElement.innerText = "Jangan khawatir, semua akan baik-baik saja 🌈";
-          break;
-        case "senang":
-          outputElement.innerText = "Hebat! Senyummu menular 😄";
-          break;
-        case "marah":
-          outputElement.innerText = "Tenang... tarik napas dalam dulu ya 🌿";
-          break;
-        case "lelah":
-          outputElement.innerText = "Kamu kuat, terus semangat 💪 Jangan lupa beristirahat 💤";
-          break;
-        default:
-          outputElement.innerText = "Tetap semangat, kamu bisa melakukannya 🚀";
-      }
-    }
+                <div class="emotion-display">
+                    <span class="emotion-label">EMOSI</span>
+                    <span class="emotion-emoji" id="emotionEmoji">😐</span>
+                    <span class="emotion-value" id="emotionValue">Menunggu...</span>
+                </div>
 
-    // --- Analisis suara dengan Web Audio API ---
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        const audioCtx = new AudioContext();
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        source.connect(analyser);
-        analyser.fftSize = 256;
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                <div class="advice-box">
+                    <span class="advice-icon"><i class="fas fa-heart"></i></span>
+                    <span class="advice-text" id="faceAdvice">
+                        <span class="highlight">✨</span> Aktifkan webcam untuk mulai deteksi
+                    </span>
+                </div>
+            </div>
 
-        function analyzeVoice() {
-          analyser.getByteFrequencyData(dataArray);
-          let volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            <!-- KOLOM KANAN: SUARA -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-microphone"></i> Deteksi Suara
+                    <span style="font-size:0.6rem; color:rgba(0,255,136,0.1);">Web Audio API</span>
+                </div>
 
-          if (volume < 10) {
-            outputElement.innerText = "Bersuara lebih percaya diri ya ✨";
-          } else if (volume > 200) {
-            outputElement.innerText = "Bagus! Suaramu lantang, cocok tampil di depan publik 🎤";
-          } else {
-            outputElement.innerText = "Suaramu terdengar jelas 👍";
-          }
+                <div style="width:100%; aspect-ratio:16/9; background:rgba(0,0,0,0.2); border-radius:1.5rem; border:1px solid rgba(0,255,136,0.02); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem;">
+                    <i class="fas fa-microphone" style="font-size:3.5rem; color:rgba(0,255,136,0.04);"></i>
+                    <span style="color:rgba(0,255,136,0.1); font-size:0.8rem;">Mendeteksi suara secara real-time</span>
+                </div>
 
-          // Deteksi sederhana untuk suara serak (dummy rule: frekuensi rendah dominan)
-          let lowFreq = dataArray.slice(0, 10).reduce((a, b) => a + b) / 10;
-          if (lowFreq > 50) {
-            outputElement.innerText = "Suaramu agak serak, minum air putih yang banyak 💧";
-          }
+                <div class="voice-display">
+                    <span class="voice-label">SUARA</span>
+                    <span class="voice-value" id="voiceStatus">Menunggu...</span>
+                    <div class="voice-meter">
+                        <div class="fill" id="voiceMeter"></div>
+                    </div>
+                </div>
 
-          requestAnimationFrame(analyzeVoice);
+                <div class="advice-box">
+                    <span class="advice-icon"><i class="fas fa-comment"></i></span>
+                    <span class="advice-text" id="voiceAdvice">
+                        <span class="highlight">🎤</span> Bicara untuk mulai deteksi suara
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button id="toggleBtn" onclick="toggleWebcam()">
+                <i class="fas fa-stop"></i> Stop Webcam
+            </button>
+            <button onclick="captureSnapshot()">
+                <i class="fas fa-camera"></i> Snapshot
+            </button>
+            <button id="voiceToggleBtn" onclick="toggleVoice()" style="display:none;">
+                <i class="fas fa-play"></i> Start Voice
+            </button>
+        </div>
+
+        <div class="footer-note">
+            <i class="fas fa-shield-alt"></i>
+            Streaming aman · hanya untuk keperluan presentasi
+        </div>
+    </div>
+
+    <!-- LIBRARY -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ================================================================
+        // ===== WEBCAM + FACE MESH =====
+        // ================================================================
+
+        let stream = null;
+        let isStreaming = false;
+        let faceMesh = null;
+        let isFaceMeshReady = false;
+
+        const video = document.getElementById('webcamStream');
+        const canvas = document.getElementById('faceCanvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('webcamPlaceholder');
+        const placeholderText = document.getElementById('placeholderText');
+        const placeholderIcon = document.getElementById('placeholderIcon');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const faceStatus = document.getElementById('faceStatus');
+        const emotionEmoji = document.getElementById('emotionEmoji');
+        const emotionValue = document.getElementById('emotionValue');
+        const faceAdvice = document.getElementById('faceAdvice');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // ===== KATA-KATA BERDASARKAN EMOSI =====
+        const emotionMessages = {
+            'sedih': {
+                emoji: '😢',
+                advice: 'Tidak apa-apa merasa sedih, <span class="highlight">kamu kuat</span>. Semua akan baik-baik saja. Istirahatlah dan jangan terlalu keras pada dirimu sendiri. 💙'
+            },
+            'senang': {
+                emoji: '😄',
+                advice: 'Wah, <span class="highlight">kamu terlihat bahagia!</span> Senyumanmu menular! Teruslah bersinar dan bagikan kebahagiaanmu kepada orang lain. ✨'
+            },
+            'marah': {
+                emoji: '😠',
+                advice: 'Ambil napas dalam-dalam, <span class="highlight">tenangkan pikiranmu</span>. Tarik napas panjang dan hembuskan perlahan. Kamu bisa melewati ini. 🧘'
+            },
+            'lelah': {
+                emoji: '😴',
+                advice: '<span class="highlight">Istirahatlah sejenak</span>, tubuhmu butuh waktu untuk memulihkan energi. Jangan lupa untuk menjaga kesehatanmu. 💤'
+            },
+            'tenang': {
+                emoji: '😌',
+                advice: 'Kamu terlihat <span class="highlight">tenang dan damai</span>. Teruslah pertahankan ketenangan ini. Semoga harimu menyenangkan! 🌿'
+            },
+            'netral': {
+                emoji: '😐',
+                advice: 'Teruslah <span class="highlight">semangat!</span> Setiap hari adalah kesempatan baru untuk menjadi lebih baik. Kamu hebat! 💪'
+            }
+        };
+
+        // ===== EMOTION DETECTION =====
+        function detectEmotion(landmarks) {
+            const mouthTop = landmarks[13];
+            const mouthBottom = landmarks[14];
+            const mouthLeft = landmarks[78];
+            const mouthRight = landmarks[308];
+
+            const eyeLeftTop = landmarks[159];
+            const eyeLeftBottom = landmarks[145];
+            const eyeRightTop = landmarks[386];
+            const eyeRightBottom = landmarks[374];
+
+            const browLeft = landmarks[70];
+            const browRight = landmarks[300];
+
+            const mouthHeight = Math.abs(mouthTop.y - mouthBottom.y);
+            const mouthWidth = Math.abs(mouthLeft.x - mouthRight.x);
+            const mouthRatio = mouthHeight / (mouthWidth + 0.001);
+
+            const leftEyeOpen = Math.abs(eyeLeftTop.y - eyeLeftBottom.y);
+            const rightEyeOpen = Math.abs(eyeRightTop.y - eyeRightBottom.y);
+            const avgEyeOpen = (leftEyeOpen + rightEyeOpen) / 2;
+
+            const browY = (browLeft.y + browRight.y) / 2;
+            const eyeY = (eyeLeftTop.y + eyeRightTop.y) / 2;
+            const browEyeDiff = browY - eyeY;
+
+            let emotion = 'netral';
+
+            if (mouthRatio > 0.5 && mouthHeight > 0.025) {
+                emotion = 'senang';
+            } else if (mouthRatio < 0.25 && browEyeDiff < 0.015 && avgEyeOpen < 0.025) {
+                emotion = 'sedih';
+            } else if (browEyeDiff < 0.005 && avgEyeOpen < 0.015 && mouthRatio < 0.3) {
+                emotion = 'marah';
+            } else if (avgEyeOpen < 0.015 && mouthRatio < 0.3 && mouthHeight < 0.015) {
+                emotion = 'lelah';
+            } else if (mouthRatio > 0.2 && mouthRatio < 0.4 && avgEyeOpen > 0.02 && avgEyeOpen < 0.04) {
+                emotion = 'tenang';
+            }
+
+            return emotion;
         }
-        analyzeVoice();
-      })
-      .catch(err => {
-        console.error("Mic error:", err);
-      });
-  </script>
+
+        // ===== DRAW LANDMARKS =====
+        function drawLandmarks(landmarks) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < landmarks.length; i++) {
+                const x = landmarks[i].x * canvas.width;
+                const y = landmarks[i].y * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
+                ctx.fill();
+            }
+        }
+
+        // ===== UPDATE EMOTION DISPLAY =====
+        function updateEmotionDisplay(emotion) {
+            const data = emotionMessages[emotion] || emotionMessages['netral'];
+            emotionEmoji.textContent = data.emoji;
+            emotionValue.textContent = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+            faceAdvice.innerHTML = data.advice;
+
+            if (emotion === 'senang') {
+                emotionValue.style.color = '#00ff88';
+                emotionValue.style.textShadow = '0 0 30px rgba(0,255,136,0.3)';
+            } else if (emotion === 'sedih') {
+                emotionValue.style.color = '#4488ff';
+                emotionValue.style.textShadow = '0 0 30px rgba(68,136,255,0.3)';
+            } else if (emotion === 'marah') {
+                emotionValue.style.color = '#ff4444';
+                emotionValue.style.textShadow = '0 0 30px rgba(255,68,68,0.3)';
+            } else if (emotion === 'lelah') {
+                emotionValue.style.color = '#ffaa44';
+                emotionValue.style.textShadow = '0 0 30px rgba(255,170,68,0.3)';
+            } else {
+                emotionValue.style.color = '#00ff88';
+                emotionValue.style.textShadow = '0 0 30px rgba(0,255,136,0.1)';
+            }
+        }
+
+        // ===== FACE MESH INIT =====
+        function initFaceMesh() {
+            faceMesh = new FaceMesh({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                }
+            });
+
+            faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            faceMesh.onResults((results) => {
+                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                    const landmarks = results.multiFaceLandmarks[0];
+                    const width = video.videoWidth || 640;
+                    const height = video.videoHeight || 480;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.style.display = 'block';
+
+                    drawLandmarks(landmarks);
+
+                    const emotion = detectEmotion(landmarks);
+                    updateEmotionDisplay(emotion);
+
+                    faceStatus.textContent = 'Terdeteksi ✓';
+                    faceStatus.style.color = 'rgba(0,255,136,0.8)';
+
+                } else {
+                    faceStatus.textContent = 'Tidak terdeteksi';
+                    faceStatus.style.color = 'rgba(0,255,136,0.2)';
+                    emotionEmoji.textContent = '😐';
+                    emotionValue.textContent = 'Tidak terdeteksi';
+                    canvas.style.display = 'none';
+                }
+            });
+
+            isFaceMeshReady = true;
+            loadingOverlay.style.display = 'none';
+            console.log('FaceMesh siap!');
+        }
+
+        // ===== START WEBCAM =====
+        async function startWebcam() {
+            try {
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'Loading...';
+                placeholderText.textContent = 'Mengaktifkan webcam...';
+                placeholderIcon.className = 'fas fa-spinner fa-spin';
+                placeholder.style.display = 'flex';
+                video.style.display = 'none';
+                loadingOverlay.style.display = 'flex';
+
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                });
+
+                stream = mediaStream;
+                video.srcObject = stream;
+                await video.play();
+
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                isStreaming = true;
+
+                toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Webcam';
+                toggleBtn.className = 'active';
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'LIVE';
+                placeholderIcon.className = 'fas fa-camera';
+
+                if (!faceMesh) {
+                    initFaceMesh();
+                }
+
+                if (faceMesh && isFaceMeshReady) {
+                    const camera = new Camera(video, {
+                        onFrame: async () => {
+                            if (isStreaming && faceMesh) {
+                                try {
+                                    await faceMesh.send({ image: video });
+                                } catch (err) {}
+                            }
+                        },
+                        width: 640,
+                        height: 480
+                    });
+                    camera.start();
+                }
+
+                loadingOverlay.style.display = 'none';
+
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                placeholderText.textContent = '⚠️ Webcam tidak dapat diakses';
+                placeholder.style.display = 'flex';
+                video.style.display = 'none';
+                placeholderIcon.className = 'fas fa-exclamation-triangle';
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'ERROR';
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Webcam';
+                toggleBtn.className = '';
+                loadingOverlay.style.display = 'none';
+
+                if (err.name === 'NotAllowedError') {
+                    placeholderText.textContent = '⚠️ Izin kamera ditolak';
+                } else if (err.name === 'NotFoundError') {
+                    placeholderText.textContent = '⚠️ Webcam tidak ditemukan';
+                }
+            }
+        }
+
+        // ===== TOGGLE WEBCAM =====
+        async function toggleWebcam() {
+            if (isStreaming) {
+                stopWebcam();
+            } else {
+                await startWebcam();
+            }
+        }
+
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            video.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholderText.textContent = 'Klik Start untuk akses webcam';
+            placeholderIcon.className = 'fas fa-camera';
+            isStreaming = false;
+
+            toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start Webcam';
+            toggleBtn.className = '';
+            statusDot.className = 'status-dot off';
+            statusText.textContent = 'OFF';
+            faceStatus.textContent = 'Tidak aktif';
+            faceStatus.style.color = 'rgba(0,255,136,0.2)';
+            emotionEmoji.textContent = '😐';
+            emotionValue.textContent = 'Tidak aktif';
+            canvas.style.display = 'none';
+            faceAdvice.innerHTML = '<span class="highlight">✨</span> Aktifkan webcam untuk mulai deteksi';
+        }
+
+        // ===== SNAPSHOT =====
+        function captureSnapshot() {
+            if (!isStreaming) {
+                alert('Nyalakan webcam terlebih dahulu!');
+                return;
+            }
+
+            const snapCanvas = document.createElement('canvas');
+            snapCanvas.width = video.videoWidth || 640;
+            snapCanvas.height = video.videoHeight || 480;
+            const snapCtx = snapCanvas.getContext('2d');
+            snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+
+            snapCtx.fillStyle = 'rgba(0,0,0,0.5)';
+            snapCtx.fillRect(10, 10, 200, 45);
+            snapCtx.fillStyle = '#00ff88';
+            snapCtx.font = '18px sans-serif';
+            snapCtx.fillText(`Emosi: ${emotionValue.textContent}`, 20, 42);
+
+            const link = document.createElement('a');
+            link.download = `snapshot_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.png`;
+            link.href = snapCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // ================================================================
+        // ===== VOICE DETECTION =====
+        // ================================================================
+
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let isVoiceActive = false;
+        let voiceAnimationId = null;
+        let voiceStream = null;
+
+        const voiceStatus = document.getElementById('voiceStatus');
+        const voiceMeter = document.getElementById('voiceMeter');
+        const voiceAdvice = document.getElementById('voiceAdvice');
+
+        const voiceMessages = {
+            'serak': 'Minumlah <span class="highlight">air putih yang banyak</span> untuk melembabkan tenggorokanmu. 💧',
+            'jernih': 'Suaramu sangat <span class="highlight">jernih dan merdu</span>! Teruslah berbicara dengan percaya diri. 🎵',
+            'pelan': 'Cobalah untuk <span class="highlight">lebih percaya diri</span> dan tingkatkan volume suaramu. Kamu berharga untuk didengar! 🔊',
+            'keras': 'Suaramu <span class="highlight">bertenaga</span>! Kamu cocok untuk berbicara di depan umum. Teruslah berani tampil! 🎤',
+            'normal': 'Suaramu <span class="highlight">sangat baik</span>! Teruslah berkomunikasi dengan percaya diri. 💬'
+        };
+
+        // ===== START VOICE =====
+        async function startVoice() {
+            try {
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+
+                voiceStream = mediaStream;
+
+                audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 1024;
+                analyser.smoothingTimeConstant = 0.3;
+
+                source.connect(analyser);
+                dataArray = new Uint8Array(analyser.fftSize);
+
+                isVoiceActive = true;
+                voiceStatus.textContent = 'Mendeteksi...';
+                voiceAdvice.innerHTML = '<span class="highlight">🎤</span> Sedang menganalisis suara...';
+
+                detectVoice();
+
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+                voiceStatus.textContent = 'Error';
+                voiceAdvice.innerHTML = '⚠️ Tidak dapat mengakses mikrofon. Periksa izin akses.';
+            }
+        }
+
+        // ===== DETECT VOICE =====
+        function detectVoice() {
+            if (!isVoiceActive) return;
+
+            analyser.getByteTimeDomainData(dataArray);
+
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                const value = (dataArray[i] - 128) / 128;
+                sum += value * value;
+            }
+            const rms = Math.sqrt(sum / dataArray.length);
+            const volume = Math.min(1, rms * 3);
+
+            // Update meter
+            voiceMeter.style.width = (volume * 100) + '%';
+
+            // Analisis suara jika volume cukup
+            if (volume > 0.02) {
+                analyzeVoice(volume);
+            } else {
+                voiceStatus.textContent = 'Diam';
+                voiceStatus.style.color = 'rgba(0,255,136,0.2)';
+            }
+
+            voiceAnimationId = requestAnimationFrame(detectVoice);
+        }
+
+        // ===== ANALYZE VOICE =====
+        function analyzeVoice(volume) {
+            // Dapatkan frekuensi
+            const freqData = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(freqData);
+
+            // Cari frekuensi dominan
+            let maxVal = 0;
+            let maxIndex = 0;
+            for (let i = 0; i < freqData.length; i++) {
+                if (freqData[i] > maxVal) {
+                    maxVal = freqData[i];
+                    maxIndex = i;
+                }
+            }
+
+            const nyquist = audioContext.sampleRate / 2;
+            const dominantFreq = (maxIndex / freqData.length) * nyquist;
+
+            // Klasifikasi suara
+            let status = '';
+            let advice = '';
+
+            // Deteksi serak: frekuensi rendah + volume tidak stabil
+            if (dominantFreq < 100 && volume > 0.05) {
+                status = 'Serak';
+                advice = voiceMessages['serak'];
+                voiceStatus.style.color = '#ff8844';
+            }
+            // Deteksi jernih: frekuensi tinggi + volume stabil
+            else if (dominantFreq > 200 && volume > 0.1 && volume < 0.6) {
+                status = 'Jernih';
+                advice = voiceMessages['jernih'];
+                voiceStatus.style.color = '#00ff88';
+            }
+            // Deteksi terlalu pelan
+            else if (volume > 0.02 && volume < 0.08) {
+                status = 'Terlalu Pelan';
+                advice = voiceMessages['pelan'];
+                voiceStatus.style.color = '#ffaa44';
+            }
+            // Deteksi terlalu keras
+            else if (volume > 0.7) {
+                status = 'Terlalu Keras';
+                advice = voiceMessages['keras'];
+                voiceStatus.style.color = '#ff6666';
+            }
+            // Normal
+            else if (volume > 0.08 && volume < 0.7) {
+                status = 'Normal';
+                advice = voiceMessages['normal'];
+                voiceStatus.style.color = '#7fd4ff';
+            }
+
+            if (status) {
+                voiceStatus.textContent = status;
+                voiceAdvice.innerHTML = advice;
+            }
+        }
+
+        // ===== TOGGLE VOICE =====
+        function toggleVoice() {
+            if (isVoiceActive) {
+                stopVoice();
+            } else {
+                startVoice();
+            }
+        }
+
+        function stopVoice() {
+            isVoiceActive = false;
+            if (voiceAnimationId) {
+                cancelAnimationFrame(voiceAnimationId);
+                voiceAnimationId = null;
+            }
+            if (voiceStream) {
+                voiceStream.getTracks().forEach(track => track.stop());
+                voiceStream = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            voiceStatus.textContent = 'Berhenti';
+            voiceStatus.style.color = 'rgba(0,255,136,0.2)';
+            voiceMeter.style.width = '0%';
+            voiceAdvice.innerHTML = '<span class="highlight">🎤</span> Klik Start untuk mendeteksi suara';
+        }
+
+        // ================================================================
+        // ===== INIT =====
+        // ================================================================
+
+        window.addEventListener('load', function() {
+            // Mulai webcam otomatis
+            setTimeout(startWebcam, 500);
+
+            // Mulai voice detection otomatis
+            setTimeout(startVoice, 1000);
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (voiceStream) {
+                voiceStream.getTracks().forEach(track => track.stop());
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+        });
+
+        // Fallback jika FaceMesh loading lama
+        setTimeout(() => {
+            if (!isFaceMeshReady) {
+                loadingOverlay.style.display = 'none';
+                console.log('FaceMesh timeout - melanjutkan tanpa deteksi');
+            }
+        }, 15000);
+    </script>
+
 </body>
 </html>
-
