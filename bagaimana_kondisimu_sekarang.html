@@ -368,11 +368,6 @@
             width: 0%;
         }
 
-        .voice-icon {
-            font-size: 1.5rem;
-            color: rgba(0, 255, 136, 0.1);
-        }
-
         .controls {
             display: flex;
             gap: 0.8rem;
@@ -418,6 +413,31 @@
             font-size: 0.6rem;
             color: rgba(0, 255, 136, 0.08);
             letter-spacing: 1px;
+        }
+
+        /* Camera selector */
+        .camera-selector {
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            border-radius: 40px;
+            color: rgba(0, 255, 136, 0.6);
+            font-size: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            max-width: 250px;
+            cursor: pointer;
+        }
+
+        .camera-selector:focus {
+            outline: none;
+            border-color: rgba(0, 255, 136, 0.15);
+        }
+
+        .camera-selector option {
+            background: #0a1218;
+            color: #c0dce8;
         }
 
         @media (max-width: 900px) {
@@ -517,6 +537,11 @@
                     </div>
                 </div>
 
+                <!-- Camera Selector -->
+                <select id="cameraSelect" class="camera-selector" onchange="switchCamera()">
+                    <option value="">-- Pilih Kamera --</option>
+                </select>
+
                 <div class="status-bar">
                     <span class="status-dot" id="statusDot"></span>
                     <span class="status-text" id="statusText">Loading...</span>
@@ -576,8 +601,8 @@
             <button onclick="captureSnapshot()">
                 <i class="fas fa-camera"></i> Snapshot
             </button>
-            <button id="voiceToggleBtn" onclick="toggleVoice()" style="display:none;">
-                <i class="fas fa-play"></i> Start Voice
+            <button onclick="refreshCamera()">
+                <i class="fas fa-sync-alt"></i> Refresh Kamera
             </button>
         </div>
 
@@ -602,6 +627,8 @@
         let isStreaming = false;
         let faceMesh = null;
         let isFaceMeshReady = false;
+        let cameraInstance = null;
+        let selectedDeviceId = null;
 
         const video = document.getElementById('webcamStream');
         const canvas = document.getElementById('faceCanvas');
@@ -617,6 +644,7 @@
         const emotionValue = document.getElementById('emotionValue');
         const faceAdvice = document.getElementById('faceAdvice');
         const loadingOverlay = document.getElementById('loadingOverlay');
+        const cameraSelect = document.getElementById('cameraSelect');
 
         // ===== KATA-KATA BERDASARKAN EMOSI =====
         const emotionMessages = {
@@ -776,8 +804,40 @@
             console.log('FaceMesh siap!');
         }
 
+        // ===== LIST CAMERAS =====
+        async function listCameras() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                cameraSelect.innerHTML = '<option value="">-- Pilih Kamera --</option>';
+
+                if (videoDevices.length === 0) {
+                    cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
+                    return;
+                }
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Kamera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                // Pilih kamera pertama secara default
+                if (videoDevices.length > 0) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                    selectedDeviceId = videoDevices[0].deviceId;
+                }
+
+                console.log(`Ditemukan ${videoDevices.length} kamera`);
+            } catch (err) {
+                console.error('Gagal mendaftar kamera:', err);
+            }
+        }
+
         // ===== START WEBCAM =====
-        async function startWebcam() {
+        async function startWebcam(deviceId = null) {
             try {
                 statusDot.className = 'status-dot off';
                 statusText.textContent = 'Loading...';
@@ -787,14 +847,20 @@
                 video.style.display = 'none';
                 loadingOverlay.style.display = 'flex';
 
-                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
                         width: { ideal: 640 },
                         height: { ideal: 480 },
                         facingMode: 'user'
                     },
                     audio: false
-                });
+                };
+
+                if (deviceId) {
+                    constraints.video.deviceId = { exact: deviceId };
+                }
+
+                const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 stream = mediaStream;
                 video.srcObject = stream;
@@ -815,7 +881,7 @@
                 }
 
                 if (faceMesh && isFaceMeshReady) {
-                    const camera = new Camera(video, {
+                    cameraInstance = new Camera(video, {
                         onFrame: async () => {
                             if (isStreaming && faceMesh) {
                                 try {
@@ -826,7 +892,7 @@
                         width: 640,
                         height: 480
                     });
-                    camera.start();
+                    cameraInstance.start();
                 }
 
                 loadingOverlay.style.display = 'none';
@@ -844,10 +910,37 @@
                 loadingOverlay.style.display = 'none';
 
                 if (err.name === 'NotAllowedError') {
-                    placeholderText.textContent = '⚠️ Izin kamera ditolak';
+                    placeholderText.textContent = '⚠️ Izin kamera ditolak. Izinkan akses kamera.';
                 } else if (err.name === 'NotFoundError') {
-                    placeholderText.textContent = '⚠️ Webcam tidak ditemukan';
+                    placeholderText.textContent = '⚠️ Webcam tidak ditemukan. Pastikan kamera terhubung.';
+                } else if (err.name === 'OverconstrainedError') {
+                    placeholderText.textContent = '⚠️ Kamera yang dipilih tidak tersedia. Coba pilih kamera lain.';
                 }
+            }
+        }
+
+        // ===== SWITCH CAMERA =====
+        async function switchCamera() {
+            const deviceId = cameraSelect.value;
+            if (!deviceId) return;
+
+            if (isStreaming) {
+                stopWebcam();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            selectedDeviceId = deviceId;
+            await startWebcam(deviceId);
+        }
+
+        // ===== REFRESH CAMERA =====
+        async function refreshCamera() {
+            await listCameras();
+            if (cameraSelect.value) {
+                await switchCamera();
+            } else if (cameraSelect.options.length > 1) {
+                cameraSelect.selectedIndex = 1;
+                await switchCamera();
             }
         }
 
@@ -856,11 +949,16 @@
             if (isStreaming) {
                 stopWebcam();
             } else {
-                await startWebcam();
+                const deviceId = cameraSelect.value || null;
+                await startWebcam(deviceId);
             }
         }
 
         function stopWebcam() {
+            if (cameraInstance) {
+                cameraInstance.stop();
+                cameraInstance = null;
+            }
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
@@ -981,10 +1079,8 @@
             const rms = Math.sqrt(sum / dataArray.length);
             const volume = Math.min(1, rms * 3);
 
-            // Update meter
             voiceMeter.style.width = (volume * 100) + '%';
 
-            // Analisis suara jika volume cukup
             if (volume > 0.02) {
                 analyzeVoice(volume);
             } else {
@@ -997,11 +1093,9 @@
 
         // ===== ANALYZE VOICE =====
         function analyzeVoice(volume) {
-            // Dapatkan frekuensi
             const freqData = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(freqData);
 
-            // Cari frekuensi dominan
             let maxVal = 0;
             let maxIndex = 0;
             for (let i = 0; i < freqData.length; i++) {
@@ -1014,36 +1108,26 @@
             const nyquist = audioContext.sampleRate / 2;
             const dominantFreq = (maxIndex / freqData.length) * nyquist;
 
-            // Klasifikasi suara
             let status = '';
             let advice = '';
 
-            // Deteksi serak: frekuensi rendah + volume tidak stabil
             if (dominantFreq < 100 && volume > 0.05) {
                 status = 'Serak';
                 advice = voiceMessages['serak'];
                 voiceStatus.style.color = '#ff8844';
-            }
-            // Deteksi jernih: frekuensi tinggi + volume stabil
-            else if (dominantFreq > 200 && volume > 0.1 && volume < 0.6) {
+            } else if (dominantFreq > 200 && volume > 0.1 && volume < 0.6) {
                 status = 'Jernih';
                 advice = voiceMessages['jernih'];
                 voiceStatus.style.color = '#00ff88';
-            }
-            // Deteksi terlalu pelan
-            else if (volume > 0.02 && volume < 0.08) {
+            } else if (volume > 0.02 && volume < 0.08) {
                 status = 'Terlalu Pelan';
                 advice = voiceMessages['pelan'];
                 voiceStatus.style.color = '#ffaa44';
-            }
-            // Deteksi terlalu keras
-            else if (volume > 0.7) {
+            } else if (volume > 0.7) {
                 status = 'Terlalu Keras';
                 advice = voiceMessages['keras'];
                 voiceStatus.style.color = '#ff6666';
-            }
-            // Normal
-            else if (volume > 0.08 && volume < 0.7) {
+            } else if (volume > 0.08 && volume < 0.7) {
                 status = 'Normal';
                 advice = voiceMessages['normal'];
                 voiceStatus.style.color = '#7fd4ff';
@@ -1088,9 +1172,15 @@
         // ===== INIT =====
         // ================================================================
 
-        window.addEventListener('load', function() {
+        window.addEventListener('load', async function() {
+            // Daftar kamera
+            await listCameras();
+
             // Mulai webcam otomatis
-            setTimeout(startWebcam, 500);
+            setTimeout(() => {
+                const deviceId = cameraSelect.value || null;
+                startWebcam(deviceId);
+            }, 500);
 
             // Mulai voice detection otomatis
             setTimeout(startVoice, 1000);
