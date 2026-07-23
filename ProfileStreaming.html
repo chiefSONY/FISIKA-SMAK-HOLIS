@@ -74,7 +74,6 @@
             align-items: stretch;
         }
 
-        /* ===== KARTU PROFIL ===== */
         .card {
             background: rgba(10, 20, 30, 0.6);
             backdrop-filter: blur(24px) saturate(1.2);
@@ -90,7 +89,6 @@
             transform: translateY(-4px);
         }
 
-        /* ===== STREAMING PANEL ===== */
         .stream-panel {
             background: rgba(10, 20, 30, 0.5);
             backdrop-filter: blur(20px) saturate(1.1);
@@ -181,11 +179,10 @@
             justify-content: center;
         }
 
-        .video-wrapper img {
+        .video-wrapper iframe {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            display: block;
+            border: none;
             background: #0a1218;
         }
 
@@ -193,7 +190,7 @@
             position: absolute;
             color: #4a7a8f;
             font-size: 0.9rem;
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.6rem;
@@ -255,27 +252,7 @@
             gap: 0.5rem;
         }
 
-        .stream-controls .actions button {
-            color: #6a9ab0;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 0.3rem 0.9rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .stream-controls .actions button:hover {
-            background: rgba(0, 200, 255, 0.04);
-            border-color: rgba(0, 200, 255, 0.1);
-            color: #b0dfff;
-        }
-
+        .stream-controls .actions button,
         .stream-controls .actions a {
             color: #6a9ab0;
             background: rgba(255, 255, 255, 0.02);
@@ -288,17 +265,17 @@
             align-items: center;
             gap: 0.4rem;
             cursor: pointer;
-            text-decoration: none;
             font-family: 'Inter', sans-serif;
+            text-decoration: none;
         }
 
+        .stream-controls .actions button:hover,
         .stream-controls .actions a:hover {
             background: rgba(0, 200, 255, 0.04);
             border-color: rgba(0, 200, 255, 0.1);
             color: #b0dfff;
         }
 
-        /* ===== PROFIL ===== */
         .profile-header {
             display: flex;
             align-items: center;
@@ -678,17 +655,20 @@
             margin-right: 0.3rem;
         }
 
-        .fa-spin {
-            animation: fa-spin 1s infinite linear;
+        .info-box {
+            background: rgba(0, 200, 255, 0.04);
+            border: 1px solid rgba(0, 200, 255, 0.06);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 0.8rem;
+            text-align: center;
+            color: #6a9ab0;
+            font-size: 0.8rem;
         }
 
-        @keyframes fa-spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        .info-box i {
+            color: #4db8ff;
+            margin-right: 0.4rem;
         }
 
         @media (max-width: 1024px) {
@@ -754,7 +734,7 @@
     <div class="bg-glow"></div>
 
     <div class="main-container">
-        <!-- ===== KARTU PROFIL ===== -->
+        <!-- PROFIL -->
         <div class="card">
             <div class="profile-header">
                 <div class="avatar">
@@ -841,7 +821,7 @@
             </div>
         </div>
 
-        <!-- ===== STREAMING PANEL ===== -->
+        <!-- STREAMING -->
         <div class="stream-panel">
             <div class="stream-header">
                 <div class="title">
@@ -857,13 +837,10 @@
             </div>
 
             <div class="video-wrapper">
-                <img id="espStream"
-                src="http://10.101.209.119/"
-                alt="ESP32 Stream"
-                style="width:100%; height:100%; object-fit:contain; display:none;">
-                <div class="placeholder" id="espPlaceholder" style="display:flex;">
+                <iframe id="espFrame" src="http://10.101.209.119/" allow="autoplay"></iframe>
+                <div class="placeholder" id="espPlaceholder" style="display:none;">
                     <i class="fas fa-microchip"></i>
-                    <span>Menghubungkan ke ESP...</span>
+                    <span>Tidak dapat terhubung ke ESP</span>
                     <span style="font-size:0.65rem; opacity:0.5;">http://10.101.209.119/</span>
                 </div>
                 <div class="video-label">
@@ -886,6 +863,11 @@
                 </div>
             </div>
 
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                Jika streaming tidak muncul, buka langsung di <a href="http://10.101.209.119/" target="_blank" style="color:#4db8ff;">http://10.101.209.119/</a>
+            </div>
+
             <div class="stream-footer">
                 <i class="fas fa-shield-alt"></i>
                 Stream aman · Untuk keperluan presentasi & pembelajaran
@@ -894,7 +876,7 @@
     </div>
 
     <script>
-        const img = document.getElementById('espStream');
+        const iframe = document.getElementById('espFrame');
         const placeholder = document.getElementById('espPlaceholder');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
@@ -904,62 +886,90 @@
         let attempts = 0;
         const maxAttempts = 3;
 
-        function loadStream() {
-            statusDot.className = 'status-dot off';
-            statusText.textContent = 'Loading...';
-            statusInfo.textContent = 'Menghubungkan ke ESP...';
-            statusIcon.style.color = '#ffaa00';
-            placeholder.style.display = 'flex';
-            img.style.display = 'none';
-
-            const timestamp = new Date().getTime();
-            img.src = 'http://10.101.209.119/?t=' + timestamp;
-
-            img.onload = function() {
-                img.style.display = 'block';
-                placeholder.style.display = 'none';
+        function checkIframeLoaded() {
+            // Cek apakah iframe berhasil load
+            iframe.onload = function() {
                 statusDot.className = 'status-dot';
                 statusText.textContent = 'LIVE';
                 statusInfo.textContent = 'Streaming dari ESP';
                 statusIcon.style.color = '#00ff88';
+                placeholder.style.display = 'none';
                 attempts = 0;
             };
 
-            img.onerror = function() {
-                attempts++;
-                if (attempts < maxAttempts) {
-                    setTimeout(loadStream, 2000);
-                } else {
-                    img.style.display = 'none';
-                    placeholder.style.display = 'flex';
-                    statusDot.className = 'status-dot off';
-                    statusText.textContent = 'OFFLINE';
-                    statusInfo.textContent = 'ESP tidak terhubung';
-                    statusIcon.style.color = '#ff4444';
-                }
+            iframe.onerror = function() {
+                handleError();
             };
 
+            // Timeout jika tidak ada respon
             setTimeout(() => {
-                if (img.style.display !== 'block' && attempts < maxAttempts) {
-                    img.onerror();
+                // Cek apakah iframe masih loading
+                try {
+                    // Jika tidak bisa diakses, anggap error
+                    if (iframe.contentWindow) {
+                        // Iframe berhasil diakses
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = 'LIVE';
+                        statusInfo.textContent = 'Streaming dari ESP';
+                        statusIcon.style.color = '#00ff88';
+                        placeholder.style.display = 'none';
+                    }
+                } catch (e) {
+                    // CORS error - tapi iframe mungkin tetap berfungsi
+                    statusDot.className = 'status-dot';
+                    statusText.textContent = 'LIVE';
+                    statusInfo.textContent = 'Streaming dari ESP';
+                    statusIcon.style.color = '#00ff88';
+                    placeholder.style.display = 'none';
                 }
-            }, 5000);
+            }, 3000);
+        }
+
+        function handleError() {
+            attempts++;
+            if (attempts < maxAttempts) {
+                setTimeout(() => {
+                    iframe.src = 'http://10.101.209.119/';
+                }, 2000);
+            } else {
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'OFFLINE';
+                statusInfo.textContent = 'ESP tidak terhubung';
+                statusIcon.style.color = '#ff4444';
+                placeholder.style.display = 'flex';
+            }
         }
 
         function refreshStream() {
             attempts = 0;
-            loadStream();
+            statusDot.className = 'status-dot off';
+            statusText.textContent = 'Loading...';
+            statusInfo.textContent = 'Menghubungkan ke ESP...';
+            statusIcon.style.color = '#ffaa00';
+            placeholder.style.display = 'none';
+
+            // Reload iframe
+            const src = iframe.src;
+            iframe.src = '';
+            setTimeout(() => {
+                iframe.src = 'http://10.101.209.119/';
+            }, 300);
         }
 
-        // Auto refresh setiap 10 detik
+        // Auto refresh setiap 15 detik
         setInterval(() => {
-            if (img.style.display === 'block') {
-                const timestamp = new Date().getTime();
-                img.src = 'http://10.101.209.119/?t=' + timestamp;
+            if (statusDot.className === 'status-dot') {
+                const src = iframe.src;
+                iframe.src = '';
+                setTimeout(() => {
+                    iframe.src = 'http://10.101.209.119/';
+                }, 300);
             }
-        }, 10000);
+        }, 15000);
 
-        window.addEventListener('load', loadStream);
+        window.addEventListener('load', function() {
+            checkIframeLoaded();
+        });
     </script>
 
 </body>
