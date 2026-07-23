@@ -1,1 +1,854 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamu dimana sih? · Face Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(ellipse at 20% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 255, 136, 0.02) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(10, 20, 30, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(0, 255, 136, 0.08);
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 255, 136, 0.02);
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .neon-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+            color: #00ff88;
+            text-shadow: 
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 20px rgba(0, 255, 136, 0.4),
+                0 0 40px rgba(0, 255, 136, 0.3),
+                0 0 80px rgba(0, 255, 136, 0.2),
+                0 0 120px rgba(0, 255, 136, 0.1);
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                text-shadow: 
+                    0 0 10px rgba(0, 255, 136, 0.5),
+                    0 0 20px rgba(0, 255, 136, 0.4),
+                    0 0 40px rgba(0, 255, 136, 0.3),
+                    0 0 80px rgba(0, 255, 136, 0.2),
+                    0 0 120px rgba(0, 255, 136, 0.1);
+                opacity: 0.9;
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px rgba(0, 255, 136, 0.8),
+                    0 0 40px rgba(0, 255, 136, 0.6),
+                    0 0 80px rgba(0, 255, 136, 0.4),
+                    0 0 160px rgba(0, 255, 136, 0.3),
+                    0 0 240px rgba(0, 255, 136, 0.15);
+                opacity: 1;
+            }
+        }
+
+        .neon-emoji {
+            color: #00ff88;
+            text-shadow: 
+                0 0 10px rgba(0, 255, 136, 0.5),
+                0 0 30px rgba(0, 255, 136, 0.3);
+            animation: neonPulse 2s ease-in-out infinite alternate 0.5s;
+        }
+
+        .subtitle {
+            color: rgba(0, 255, 136, 0.3);
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+        }
+
+        /* ===== WEBCAM + CANVAS OVERLAY ===== */
+        .video-wrapper {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #0a1218;
+            border-radius: 1.8rem;
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 136, 0.06);
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.02), inset 0 0 60px rgba(0, 255, 136, 0.02);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #0a1218;
+        }
+
+        .video-wrapper canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .video-wrapper .placeholder {
+            position: absolute;
+            color: rgba(0, 255, 136, 0.2);
+            font-size: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .video-wrapper .placeholder i {
+            font-size: 4rem;
+            color: rgba(0, 255, 136, 0.06);
+        }
+
+        .video-wrapper .placeholder span {
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+        }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: blink 1.4s infinite;
+            box-shadow: 0 0 16px rgba(0, 255, 136, 0.4);
+        }
+
+        .status-dot.off {
+            background: #ff4444;
+            animation: none;
+            box-shadow: 0 0 16px rgba(255, 68, 68, 0.3);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .status-text {
+            color: rgba(0, 255, 136, 0.8);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .status-text.off {
+            color: #ff6666;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.1);
+        }
+
+        /* ===== EMOTION DISPLAY ===== */
+        .emotion-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .emotion-label {
+            color: rgba(0, 255, 136, 0.3);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+        }
+
+        .emotion-value {
+            color: #00ff88;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            min-width: 120px;
+        }
+
+        .emotion-emoji {
+            font-size: 2.2rem;
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        /* ===== ADVICE BOX ===== */
+        .advice-box {
+            margin-top: 1.2rem;
+            padding: 1.2rem 2rem;
+            background: rgba(0, 255, 136, 0.02);
+            border-radius: 30px;
+            border: 1px solid rgba(0, 255, 136, 0.04);
+            border-left: 3px solid rgba(0, 255, 136, 0.15);
+        }
+
+        .advice-box .advice-text {
+            color: rgba(0, 255, 136, 0.6);
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.6;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.02);
+        }
+
+        .advice-box .advice-text i {
+            color: rgba(0, 255, 136, 0.2);
+            margin: 0 0.3rem;
+        }
+
+        .advice-box .advice-text .highlight {
+            color: #00ff88;
+            font-weight: 600;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.15);
+        }
+
+        .advice-box .advice-icon {
+            font-size: 1.5rem;
+            margin-right: 0.8rem;
+            color: rgba(0, 255, 136, 0.15);
+        }
+
+        /* ===== CONTROLS ===== */
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            background: rgba(0, 255, 136, 0.02);
+            color: rgba(0, 255, 136, 0.4);
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls button:hover {
+            background: rgba(0, 255, 136, 0.04);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: rgba(0, 255, 136, 0.7);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.02);
+        }
+
+        .controls button.active {
+            background: rgba(0, 255, 136, 0.06);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.04);
+        }
+
+        .controls button i {
+            font-size: 0.9rem;
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            font-size: 0.65rem;
+            color: rgba(0, 255, 136, 0.12);
+            letter-spacing: 0.5px;
+        }
+
+        .footer-note i {
+            margin-right: 0.3rem;
+        }
+
+        .fa-spin {
+            animation: fa-spin 1s infinite linear;
+        }
+
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+            border-radius: 1.8rem;
+        }
+
+        .loading-overlay .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 255, 136, 0.05);
+            border-top: 3px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay .load-text {
+            color: rgba(0, 255, 136, 0.3);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+                border-radius: 1.8rem;
+            }
+            .neon-title {
+                font-size: 2.2rem;
+            }
+            .video-wrapper {
+                aspect-ratio: 4/3;
+            }
+            .controls button {
+                padding: 0.4rem 1.2rem;
+                font-size: 0.75rem;
+            }
+            .emotion-value {
+                font-size: 1.1rem;
+                min-width: 80px;
+            }
+            .emotion-emoji {
+                font-size: 1.8rem;
+            }
+            .advice-box .advice-text {
+                font-size: 0.95rem;
+            }
+            .status-bar {
+                padding: 0.4rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TULISAN HIJAU NEON -->
+        <div class="neon-title">
+            Kamu dimana sih? <span class="neon-emoji">🤔</span>
+        </div>
+        <div class="subtitle">━━━ WEBCAM + FACE DETECTION ━━━</div>
+
+        <div class="video-wrapper">
+            <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
+            <canvas id="faceCanvas" style="display:none;"></canvas>
+            
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <div class="load-text">Memuat FaceMesh...</div>
+            </div>
+
+            <div class="placeholder" id="webcamPlaceholder">
+                <i class="fas fa-camera" id="placeholderIcon"></i>
+                <span id="placeholderText">Mengaktifkan webcam...</span>
+                <span style="font-size:0.7rem; opacity:0.3;">izinkan akses kamera</span>
+            </div>
+        </div>
+
+        <!-- STATUS + EMOTION -->
+        <div class="status-bar">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="status-text" id="statusText">Loading...</span>
+            <span style="color:rgba(0,255,136,0.1);">|</span>
+            <span style="color:rgba(0,255,136,0.2); font-size:0.7rem;">FACE</span>
+            <span class="status-text" id="faceStatus" style="font-size:0.75rem; color:rgba(0,255,136,0.3);">Tidak terdeteksi</span>
+        </div>
+
+        <!-- EMOTION DISPLAY -->
+        <div class="emotion-display">
+            <span class="emotion-label">EMOSI</span>
+            <span class="emotion-emoji" id="emotionEmoji">😐</span>
+            <span class="emotion-value" id="emotionValue">Tidak terdeteksi</span>
+        </div>
+
+        <!-- ADVICE BOX -->
+        <div class="advice-box">
+            <div class="advice-text">
+                <i class="fas fa-heart advice-icon"></i>
+                Apapun yang terjadi, <span class="highlight">tenanglah</span> dan <span class="highlight">berdoalah</span>.<br>
+                <i class="fas fa-hand-holding-heart" style="color:rgba(0,255,136,0.1);"></i>
+                Karena Tuhan pasti <span class="highlight">menyertai</span> langkahmu. 🙏
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button id="toggleBtn" onclick="toggleWebcam()">
+                <i class="fas fa-stop"></i> Stop
+            </button>
+            <button onclick="captureSnapshot()">
+                <i class="fas fa-camera"></i> Snapshot
+            </button>
+        </div>
+
+        <div class="footer-note">
+            <i class="fas fa-shield-alt"></i>
+            Streaming aman · hanya untuk keperluan presentasi
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- MediaPipe FaceMesh -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <script>
+        // ============================================================
+        // WEBCAM + FACE MESH DETECTION
+        // ============================================================
+
+        let stream = null;
+        let isStreaming = false;
+        let faceMesh = null;
+        let isFaceMeshReady = false;
+        let detectionInterval = null;
+
+        const video = document.getElementById('webcamStream');
+        const canvas = document.getElementById('faceCanvas');
+        const ctx = canvas.getContext('2d');
+        const placeholder = document.getElementById('webcamPlaceholder');
+        const placeholderText = document.getElementById('placeholderText');
+        const placeholderIcon = document.getElementById('placeholderIcon');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const faceStatus = document.getElementById('faceStatus');
+        const emotionEmoji = document.getElementById('emotionEmoji');
+        const emotionValue = document.getElementById('emotionValue');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // ===== EMOTION MAPPING =====
+        function detectEmotion(landmarks) {
+            // Ambil titik penting untuk deteksi ekspresi
+            // Indeks landmark FaceMesh:
+            // 0: Mulut kiri, 13: Mulut kanan, 14: Mulut atas kiri, 17: Mulut bawah
+            // 61: Mata kanan atas, 291: Mata kiri atas, 159: Mata kanan bawah, 386: Mata kiri bawah
+            // 10: Alis kiri atas, 336: Alis kanan atas
+
+            const mouthTop = landmarks[13]; // Mulut atas
+            const mouthBottom = landmarks[14]; // Mulut bawah
+            const mouthLeft = landmarks[78];
+            const mouthRight = landmarks[308];
+
+            const eyeLeftTop = landmarks[159];
+            const eyeLeftBottom = landmarks[145];
+            const eyeRightTop = landmarks[386];
+            const eyeRightBottom = landmarks[374];
+
+            const browLeft = landmarks[70];
+            const browRight = landmarks[300];
+
+            // Hitung rasio mulut (smile detection)
+            const mouthHeight = Math.abs(mouthTop.y - mouthBottom.y);
+            const mouthWidth = Math.abs(mouthLeft.x - mouthRight.x);
+            const mouthRatio = mouthHeight / mouthWidth;
+
+            // Hitung bukaan mata
+            const leftEyeOpen = Math.abs(eyeLeftTop.y - eyeLeftBottom.y);
+            const rightEyeOpen = Math.abs(eyeRightTop.y - eyeRightBottom.y);
+            const avgEyeOpen = (leftEyeOpen + rightEyeOpen) / 2;
+
+            // Alis (frown detection)
+            const browY = (browLeft.y + browRight.y) / 2;
+            const eyeY = (eyeLeftTop.y + eyeRightTop.y) / 2;
+            const browEyeDiff = browY - eyeY;
+
+            // DETEKSI EMOSI
+            let emotion = 'Netral';
+            let emoji = '😐';
+            let confidence = 0.5;
+
+            // TERSENYUM (Smile)
+            if (mouthRatio > 0.5 && mouthHeight > 0.03) {
+                emotion = 'Tersenyum 😊';
+                emoji = '😊';
+                confidence = Math.min(1, (mouthRatio - 0.3) * 2);
+            }
+
+            // SEDIH (Sad) - mulut sedikit terbuka, alis turun
+            if (mouthRatio < 0.3 && browEyeDiff < 0.02 && avgEyeOpen < 0.03) {
+                emotion = 'Sedih 😢';
+                emoji = '😢';
+                confidence = Math.min(1, (0.03 - avgEyeOpen) * 20);
+            }
+
+            // MARAH (Angry) - alis turun, mata menyipit
+            if (browEyeDiff < 0.01 && avgEyeOpen < 0.02 && mouthRatio < 0.35) {
+                emotion = 'Marah 😠';
+                emoji = '😠';
+                confidence = Math.min(1, (0.02 - avgEyeOpen) * 30);
+            }
+
+            // TERKEJUT (Surprised) - mata terbuka lebar, mulut terbuka
+            if (avgEyeOpen > 0.04 && mouthHeight > 0.035) {
+                emotion = 'Terkejut 😲';
+                emoji = '😲';
+                confidence = Math.min(1, (avgEyeOpen - 0.025) * 20);
+            }
+
+            // BAHAGIA (Happy) - tersenyum lebar, mata sedikit menyipit
+            if (mouthRatio > 0.55 && avgEyeOpen < 0.025) {
+                emotion = 'Bahagia 😄';
+                emoji = '😄';
+                confidence = Math.min(1, (mouthRatio - 0.4) * 3);
+            }
+
+            // LELAH / KANTUK (Tired) - mata merem
+            if (avgEyeOpen < 0.015 && mouthRatio < 0.3) {
+                emotion = 'Lelah 😴';
+                emoji = '😴';
+                confidence = Math.min(1, (0.02 - avgEyeOpen) * 30);
+            }
+
+            // TENANG (Calm) - netral dengan ekspresi rileks
+            if (emotion === 'Netral' && mouthRatio > 0.2 && mouthRatio < 0.4 && avgEyeOpen > 0.02 && avgEyeOpen < 0.04) {
+                emotion = 'Tenang 😌';
+                emoji = '😌';
+                confidence = 0.7;
+            }
+
+            return { emotion, emoji, confidence };
+        }
+
+        // ===== DRAW LANDMARKS =====
+        function drawLandmarks(landmarks) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gambar titik landmark
+            for (let i = 0; i < landmarks.length; i++) {
+                const x = landmarks[i].x * canvas.width;
+                const y = landmarks[i].y * canvas.height;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(0, 255, 136, 0.3)';
+                ctx.fill();
+            }
+
+            // Gambar garis wajah (sederhana)
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.05)';
+            ctx.lineWidth = 1;
+
+            // Hubungkan titik-titik sekitar mulut
+            const mouthPoints = [0, 13, 14, 17, 37, 39, 40, 42, 78, 80, 81, 82, 84, 87, 88, 91, 95, 146, 178, 181, 185, 191, 267, 269, 270, 291, 308, 310, 311, 312, 314, 317, 318, 321, 324, 325, 375, 402, 405, 415];
+            for (let i = 0; i < mouthPoints.length - 1; i++) {
+                const p1 = landmarks[mouthPoints[i]];
+                const p2 = landmarks[mouthPoints[i + 1]];
+                if (p1 && p2) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+                    ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ===== FACE MESH INIT =====
+        function initFaceMesh() {
+            faceMesh = new FaceMesh({
+                locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                }
+            });
+
+            faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+
+            faceMesh.onResults((results) => {
+                if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                    const landmarks = results.multiFaceLandmarks[0];
+                    const width = video.videoWidth || 640;
+                    const height = video.videoHeight || 480;
+
+                    // Update canvas
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.style.display = 'block';
+
+                    // Gambar landmark
+                    drawLandmarks(landmarks);
+
+                    // Deteksi emosi
+                    const emotion = detectEmotion(landmarks);
+                    updateEmotionDisplay(emotion);
+
+                    faceStatus.textContent = 'Terdeteksi ✓';
+                    faceStatus.style.color = 'rgba(0,255,136,0.8)';
+
+                } else {
+                    faceStatus.textContent = 'Tidak terdeteksi';
+                    faceStatus.style.color = 'rgba(0,255,136,0.3)';
+                    emotionEmoji.textContent = '😐';
+                    emotionValue.textContent = 'Tidak terdeteksi';
+                    canvas.style.display = 'none';
+                }
+            });
+
+            // Setelah FaceMesh siap
+            isFaceMeshReady = true;
+            loadingOverlay.style.display = 'none';
+            console.log('FaceMesh siap!');
+        }
+
+        // ===== UPDATE EMOTION DISPLAY =====
+        function updateEmotionDisplay(emotion) {
+            emotionEmoji.textContent = emotion.emoji;
+            emotionValue.textContent = emotion.emotion;
+
+            // Animasi warna berdasarkan emosi
+            if (emotion.emotion.includes('Bahagia') || emotion.emotion.includes('Tersenyum')) {
+                emotionValue.style.color = '#00ff88';
+                emotionValue.style.textShadow = '0 0 30px rgba(0,255,136,0.3)';
+            } else if (emotion.emotion.includes('Sedih')) {
+                emotionValue.style.color = '#4488ff';
+                emotionValue.style.textShadow = '0 0 30px rgba(68,136,255,0.3)';
+            } else if (emotion.emotion.includes('Marah')) {
+                emotionValue.style.color = '#ff4444';
+                emotionValue.style.textShadow = '0 0 30px rgba(255,68,68,0.3)';
+            } else if (emotion.emotion.includes('Terkejut')) {
+                emotionValue.style.color = '#ffaa00';
+                emotionValue.style.textShadow = '0 0 30px rgba(255,170,0,0.3)';
+            } else {
+                emotionValue.style.color = '#00ff88';
+                emotionValue.style.textShadow = '0 0 30px rgba(0,255,136,0.15)';
+            }
+        }
+
+        // ===== START WEBCAM =====
+        async function startWebcam() {
+            try {
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'Loading...';
+                statusText.className = 'status-text';
+                placeholderText.textContent = 'Mengaktifkan webcam...';
+                placeholderIcon.className = 'fas fa-spinner fa-spin';
+                placeholder.style.display = 'flex';
+                video.style.display = 'none';
+                loadingOverlay.style.display = 'flex';
+
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                });
+
+                stream = mediaStream;
+                video.srcObject = stream;
+                await video.play();
+
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                isStreaming = true;
+
+                toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                toggleBtn.className = 'active';
+                statusDot.className = 'status-dot';
+                statusText.textContent = 'LIVE';
+                statusText.className = 'status-text';
+                placeholderIcon.className = 'fas fa-camera';
+
+                // Inisialisasi FaceMesh jika belum
+                if (!faceMesh) {
+                    initFaceMesh();
+                }
+
+                // Mulai deteksi wajah
+                if (faceMesh && isFaceMeshReady) {
+                    const camera = new Camera(video, {
+                        onFrame: async () => {
+                            if (isStreaming && faceMesh) {
+                                try {
+                                    await faceMesh.send({ image: video });
+                                } catch (err) {
+                                    // console.log('FaceMesh error:', err);
+                                }
+                            }
+                        },
+                        width: 640,
+                        height: 480
+                    });
+                    camera.start();
+                }
+
+                loadingOverlay.style.display = 'none';
+
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                placeholderText.textContent = '⚠️ Webcam tidak dapat diakses';
+                placeholder.style.display = 'flex';
+                video.style.display = 'none';
+                placeholderIcon.className = 'fas fa-exclamation-triangle';
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'ERROR';
+                statusText.className = 'status-text off';
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+                toggleBtn.className = '';
+                loadingOverlay.style.display = 'none';
+
+                if (err.name === 'NotAllowedError') {
+                    placeholderText.textContent = '⚠️ Izin kamera ditolak';
+                } else if (err.name === 'NotFoundError') {
+                    placeholderText.textContent = '⚠️ Webcam tidak ditemukan';
+                }
+            }
+        }
+
+        // ===== TOGGLE WEBCAM =====
+        async function toggleWebcam() {
+            if (isStreaming) {
+                stopWebcam();
+            } else {
+                await startWebcam();
+            }
+        }
+
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            video.srcObject = null;
+            video.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholderText.textContent = 'Klik Start untuk akses webcam';
+            placeholderIcon.className = 'fas fa-camera';
+            isStreaming = false;
+
+            toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
+            toggleBtn.className = '';
+            statusDot.className = 'status-dot off';
+            statusText.textContent = 'OFF';
+            statusText.className = 'status-text off';
+            faceStatus.textContent = 'Tidak aktif';
+            faceStatus.style.color = 'rgba(0,255,136,0.2)';
+            emotionEmoji.textContent = '😐';
+            emotionValue.textContent = 'Tidak aktif';
+            canvas.style.display = 'none';
+        }
+
+        // ===== SNAPSHOT =====
+        function captureSnapshot() {
+            if (!isStreaming) {
+                alert('Nyalakan webcam terlebih dahulu!');
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Tambahkan overlay emosi
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(10, 10, 200, 50);
+            ctx.fillStyle = '#00ff88';
+            ctx.font = '20px sans-serif';
+            ctx.fillText(`Emosi: ${emotionValue.textContent}`, 20, 45);
+
+            const link = document.createElement('a');
+            link.download = `snapshot_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // ===== INIT =====
+        window.addEventListener('load', function() {
+            setTimeout(startWebcam, 500);
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Fallback jika FaceMesh loading lama
+        setTimeout(() => {
+            if (!isFaceMeshReady) {
+                loadingOverlay.style.display = 'none';
+                console.log('FaceMesh timeout - melanjutkan tanpa deteksi');
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
