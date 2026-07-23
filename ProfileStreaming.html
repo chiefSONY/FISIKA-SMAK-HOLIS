@@ -202,6 +202,7 @@
             gap: 0.6rem;
             pointer-events: none;
             text-align: center;
+            padding: 1rem;
         }
 
         .video-wrapper .placeholder i {
@@ -667,6 +668,20 @@
             margin-right: 0.3rem;
         }
 
+        /* Loading spinner */
+        .fa-spin {
+            animation: fa-spin 1s infinite linear;
+        }
+
+        @keyframes fa-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         @media (max-width: 1024px) {
             .main-container {
                 grid-template-columns: 1fr;
@@ -826,7 +841,7 @@
                 </div>
                 <div class="stream-status">
                     <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">OFF</span>
+                    <span id="statusText">Loading...</span>
                     <span style="opacity:0.5; margin-left: 0.2rem;">·</span>
                     <span style="opacity:0.6;">Webcam</span>
                 </div>
@@ -836,8 +851,8 @@
             <div class="video-wrapper">
                 <video id="webcamStream" autoplay muted playsinline style="display:none;"></video>
                 <div class="placeholder" id="webcamPlaceholder">
-                    <i class="fas fa-camera"></i>
-                    <span id="placeholderText">Klik Start untuk akses webcam</span>
+                    <i class="fas fa-camera" id="placeholderIcon"></i>
+                    <span id="placeholderText">Mengaktifkan webcam...</span>
                     <span style="font-size:0.65rem; opacity:0.5;">izinkan akses kamera</span>
                 </div>
                 <div class="video-label">
@@ -848,12 +863,12 @@
             <!-- Kontrol -->
             <div class="stream-controls">
                 <div class="info">
-                    <i class="fas fa-circle" id="statusIcon" style="color: #ff4444; font-size: 0.5rem;"></i>
-                    <span id="statusInfo">Webcam tidak aktif</span>
+                    <i class="fas fa-circle" id="statusIcon" style="color: #ffaa00; font-size: 0.5rem;"></i>
+                    <span id="statusInfo">Mengaktifkan webcam...</span>
                 </div>
                 <div class="actions">
                     <button id="toggleBtn" onclick="toggleWebcam()">
-                        <i class="fas fa-play"></i> Start
+                        <i class="fas fa-stop"></i> Stop
                     </button>
                     <button onclick="captureSnapshot()">
                         <i class="fas fa-camera"></i> Snapshot
@@ -874,23 +889,29 @@
         const video = document.getElementById('webcamStream');
         const placeholder = document.getElementById('webcamPlaceholder');
         const placeholderText = document.getElementById('placeholderText');
+        const placeholderIcon = document.getElementById('placeholderIcon');
         const toggleBtn = document.getElementById('toggleBtn');
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         const statusInfo = document.getElementById('statusInfo');
         const statusIcon = document.getElementById('statusIcon');
 
-        // ===== TOGGLE WEBCAM =====
-        async function toggleWebcam() {
-            if (isStreaming) {
-                stopWebcam();
-            } else {
-                await startWebcam();
-            }
-        }
+        // ===== START WEBCAM OTOMATIS =====
+        window.addEventListener('load', function() {
+            // Tunggu sebentar lalu mulai webcam
+            setTimeout(startWebcam, 500);
+        });
 
         async function startWebcam() {
             try {
+                // Update status loading
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'Loading...';
+                statusInfo.textContent = 'Mengakses webcam...';
+                statusIcon.style.color = '#ffaa00';
+                placeholderText.textContent = 'Mengaktifkan webcam...';
+                placeholderIcon.className = 'fas fa-spinner fa-spin';
+
                 const mediaStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: { ideal: 640 },
@@ -908,26 +929,41 @@
                 placeholder.style.display = 'none';
                 isStreaming = true;
 
-                // Update UI
+                // Update UI - LIVE
                 toggleBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
                 toggleBtn.classList.add('active');
                 statusDot.className = 'status-dot';
                 statusText.textContent = 'LIVE';
                 statusInfo.textContent = 'Webcam aktif';
                 statusIcon.style.color = '#00ff88';
-                statusIcon.style.background = 'none';
+                placeholderIcon.className = 'fas fa-camera';
 
             } catch (err) {
                 console.error('Error accessing webcam:', err);
                 placeholderText.textContent = '⚠️ Webcam tidak dapat diakses';
                 placeholder.style.display = 'flex';
                 video.style.display = 'none';
+                placeholderIcon.className = 'fas fa-exclamation-triangle';
+                statusDot.className = 'status-dot off';
+                statusText.textContent = 'ERROR';
+                statusInfo.textContent = 'Gagal akses webcam';
+                statusIcon.style.color = '#ff4444';
+                toggleBtn.innerHTML = '<i class="fas fa-play"></i> Start';
 
                 if (err.name === 'NotAllowedError') {
                     placeholderText.textContent = '⚠️ Izin kamera ditolak';
                 } else if (err.name === 'NotFoundError') {
                     placeholderText.textContent = '⚠️ Webcam tidak ditemukan';
                 }
+            }
+        }
+
+        // ===== TOGGLE WEBCAM =====
+        async function toggleWebcam() {
+            if (isStreaming) {
+                stopWebcam();
+            } else {
+                await startWebcam();
             }
         }
 
@@ -940,6 +976,7 @@
             video.style.display = 'none';
             placeholder.style.display = 'flex';
             placeholderText.textContent = 'Klik Start untuk akses webcam';
+            placeholderIcon.className = 'fas fa-camera';
             isStreaming = false;
 
             // Update UI
@@ -948,43 +985,4 @@
             statusDot.className = 'status-dot off';
             statusText.textContent = 'OFF';
             statusInfo.textContent = 'Webcam tidak aktif';
-            statusIcon.style.color = '#ff4444';
-        }
-
-        // ===== SNAPSHOT =====
-        function captureSnapshot() {
-            if (!isStreaming) {
-                alert('Nyalakan webcam terlebih dahulu!');
-                return;
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Buat link download
-            const link = document.createElement('a');
-            link.download = `snapshot_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        // ===== CEK DUKUNGAN WEBCAM =====
-        function checkWebcamSupport() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                placeholderText.textContent = '⚠️ Browser tidak mendukung webcam';
-                document.getElementById('toggleBtn').disabled = true;
-                return false;
-            }
-            return true;
-        }
-
-        // Inisialisasi
-        checkWebcamSupport();
-
-        // Matikan webcam saat halaman ditutup
-        window.addEventListener('beforeunload', function() {
-            if (stream) {
-                stream.getTracks().forEach(track
+            status
