@@ -1,1 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar Fisika · Besaran, Satuan, Dimensi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #0b141a;
+            color: #e0e8f0;
+            padding: 2rem 1.5rem;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            padding: 2rem 0 3rem 0;
+        }
+
+        .header .icon {
+            font-size: 3rem;
+            color: rgba(0, 200, 255, 0.15);
+            margin-bottom: 0.5rem;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, #7fd4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: #6a9ab0;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .header .divider {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.3), transparent);
+            margin: 1rem auto;
+            border-radius: 10px;
+        }
+
+        /* ===== GRID UTAMA ===== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(10, 20, 30, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 200, 255, 0.06);
+            padding: 1.8rem 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        .card .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #7fd4ff;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card .card-title i {
+            font-size: 1.1rem;
+            color: #4db8ff;
+        }
+
+        .card .card-title .badge {
+            font-size: 0.6rem;
+            background: rgba(0, 200, 255, 0.08);
+            padding: 0.15rem 0.6rem;
+            border-radius: 30px;
+            color: #6a9ab0;
+            font-weight: 400;
+            margin-left: 0.5rem;
+        }
+
+        /* ===== TABEL ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        table thead th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            color: #6a9ab0;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 200, 255, 0.04);
+        }
+
+        table tbody td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: #c0dce8;
+        }
+
+        table tbody tr:hover td {
+            background: rgba(0, 200, 255, 0.02);
+        }
+
+        table .highlight-cell {
+            color: #7fd4ff;
+            font-weight: 600;
+        }
+
+        .dimension-badge {
+            display: inline-block;
+            background: rgba(0, 200, 255, 0.04);
+            padding: 0.1rem 0.8rem;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #7fd4ff;
+            border: 1px solid rgba(0, 200, 255, 0.04);
+        }
+
+        /* ===== CARD DIMENSI ===== */
+        .dimensi-box {
+            background: rgba(0, 200, 255, 0.02);
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid rgba(0, 200, 255, 0.04);
+            margin-top: 1rem;
+        }
+
+        .dimensi-box .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.4rem;
+            color: #7fd4ff;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .dimensi-box .formula .highlight {
+            color: #00ff88;
+        }
+
+        .dimensi-box .label {
+            color: #6a9ab0;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            color: #bdd8e8;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .step-list li:last-child {
+            border-bottom: none;
+        }
+
+        .step-list .num {
+            background: rgba(0, 200, 255, 0.04);
+            color: #4db8ff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .step-list .highlight {
+            color: #7fd4ff;
+            font-weight: 600;
+        }
+
+        /* ===== CARD FULL WIDTH ===== */
+        .card-full {
+            margin-bottom: 2rem;
+        }
+
+        /* ===== INTERAKTIF ===== */
+        .interactive-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .interactive-item {
+            background: rgba(0, 200, 255, 0.02);
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid rgba(0, 200, 255, 0.04);
+        }
+
+        .interactive-item .label {
+            font-size: 0.75rem;
+            color: #6a9ab0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .interactive-item .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #7fd4ff;
+            font-family: 'Courier New', monospace;
+            margin-top: 0.3rem;
+        }
+
+        .interactive-item .value .highlight {
+            color: #00ff88;
+        }
+
+        .interactive-item .desc {
+            font-size: 0.8rem;
+            color: #6a9ab0;
+            margin-top: 0.3rem;
+        }
+
+        .interactive-item input {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 200, 255, 0.06);
+            border-radius: 40px;
+            color: #c0dce8;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .interactive-item input:focus {
+            outline: none;
+            border-color: rgba(0, 200, 255, 0.2);
+        }
+
+        .interactive-item input::placeholder {
+            color: #3a6073;
+        }
+
+        .btn-calculate {
+            padding: 0.5rem 1.5rem;
+            background: rgba(0, 200, 255, 0.04);
+            border: 1px solid rgba(0, 200, 255, 0.06);
+            border-radius: 40px;
+            color: #7fd4ff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            margin-top: 0.8rem;
+        }
+
+        .btn-calculate:hover {
+            background: rgba(0, 200, 255, 0.08);
+            border-color: rgba(0, 200, 255, 0.12);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .interactive-box {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .card {
+                padding: 1.2rem 1.2rem;
+                border-radius: 1.5rem;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .header .icon {
+                font-size: 2rem;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+            table thead th,
+            table tbody td {
+                padding: 0.4rem 0.5rem;
+            }
+            .dimensi-box .formula {
+                font-size: 1.1rem;
+            }
+            .interactive-item .value {
+                font-size: 1.4rem;
+            }
+            .step-list li {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 200, 255, 0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 200, 255, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-grid"></div>
+
+    <div class="container">
+        <!-- ===== HEADER ===== -->
+        <div class="header">
+            <div class="icon"><i class="fas fa-flask"></i></div>
+            <h1>Besaran, Satuan &amp; Dimensi</h1>
+            <p>Fisika Dasar · SMA Kelas X</p>
+            <div class="divider"></div>
+        </div>
+
+        <!-- ===== GRID 2 KOLOM ===== -->
+        <div class="grid-2">
+
+            <!-- ===== BESARAN POKOK ===== -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-cube"></i> Besaran Pokok
+                    <span class="badge">7 Besaran</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Besaran</th>
+                                <th>Satuan (SI)</th>
+                                <th>Dimensi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><span class="highlight-cell">Panjang</span></td>
+                                <td>meter (m)</td>
+                                <td><span class="dimension-badge">[L]</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><span class="highlight-cell">Massa</span></td>
+                                <td>kilogram (kg)</td>
+                                <td><span class="dimension-badge">[M]</span></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><span class="highlight-cell">Waktu</span></td>
+                                <td>sekon (s)</td>
+                                <td><span class="dimension-badge">[T]</span></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Kuat Arus</td>
+                                <td>ampere (A)</td>
+                                <td><span class="dimension-badge">[I]</span></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Suhu</td>
+                                <td>kelvin (K)</td>
+                                <td><span class="dimension-badge">[θ]</span></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Jumlah Zat</td>
+                                <td>mol (mol)</td>
+                                <td><span class="dimension-badge">[N]</span></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Intensitas Cahaya</td>
+                                <td>kandela (cd)</td>
+                                <td><span class="dimension-badge">[J]</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 0.8rem; font-size:0.75rem; color:#3a6073;">
+                    <i class="fas fa-info-circle"></i> Besaran pokok adalah besaran yang satuannya didefinisikan secara mandiri.
+                </div>
+            </div>
+
+            <!-- ===== BESARAN TURUNAN ===== -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-arrow-right"></i> Besaran Turunan
+                    <span class="badge">Contoh</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Besaran</th>
+                                <th>Rumus</th>
+                                <th>Dimensi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Kecepatan</td>
+                                <td>v = s / t</td>
+                                <td><span class="dimension-badge">[L][T]<sup>-1</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Percepatan</td>
+                                <td>a = v / t</td>
+                                <td><span class="dimension-badge">[L][T]<sup>-2</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Gaya</td>
+                                <td>F = m · a</td>
+                                <td><span class="dimension-badge">[M][L][T]<sup>-2</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Energi</td>
+                                <td>E = F · s</td>
+                                <td><span class="dimension-badge">[M][L]<sup>2</sup>[T]<sup>-2</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Daya</td>
+                                <td>P = E / t</td>
+                                <td><span class="dimension-badge">[M][L]<sup>2</sup>[T]<sup>-3</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Tekanan</td>
+                                <td>p = F / A</td>
+                                <td><span class="dimension-badge">[M][L]<sup>-1</sup>[T]<sup>-2</sup></span></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Volume</td>
+                                <td>V = s<sup>3</sup></td>
+                                <td><span class="dimension-badge">[L]<sup>3</sup></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 0.8rem; font-size:0.75rem; color:#3a6073;">
+                    <i class="fas fa-info-circle"></i> Besaran turunan diturunkan dari besaran pokok.
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DIMENSI ===== -->
+        <div class="card card-full">
+            <div class="card-title">
+                <i class="fas fa-ruler-combined"></i> Lambang Dimensi
+                <span class="badge">Cara Menentukan</span>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:0;">
+                <!-- Kiri: Cara mencari dimensi -->
+                <div>
+                    <h4 style="color:#6a9ab0; font-weight:500; font-size:0.9rem; margin-bottom:0.8rem;">
+                        <i class="fas fa-cogs" style="color:#4db8ff;"></i> Cara Mencari Dimensi Besaran Turunan
+                    </h4>
+                    <ol class="step-list">
+                        <li>
+                            <span class="num">1</span>
+                            <span>Tulis rumus besaran turunan tersebut.</span>
+                        </li>
+                        <li>
+                            <span class="num">2</span>
+                            <span>Ganti setiap besaran dengan lambang dimensinya.</span>
+                        </li>
+                        <li>
+                            <span class="num">3</span>
+                            <span>Sederhanakan operasi aljabar (pangkat, kali, bagi).</span>
+                        </li>
+                    </ol>
+
+                    <div class="dimensi-box">
+                        <div class="label">Contoh: Dimensi Kecepatan</div>
+                        <div class="formula">
+                            v = s / t &nbsp;→&nbsp; <span class="highlight">[v] = [L] / [T] = [L][T]<sup>-1</sup></span>
+                        </div>
+                        <div style="font-size:0.85rem; color:#6a9ab0; text-align:center; margin-top:0.3rem;">
+                            s = panjang → [L] &nbsp;·&nbsp; t = waktu → [T]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kanan: Dimensi Panjang & Waktu -->
+                <div>
+                    <h4 style="color:#6a9ab0; font-weight:500; font-size:0.9rem; margin-bottom:0.8rem;">
+                        <i class="fas fa-arrows-left-right" style="color:#4db8ff;"></i> Dimensi Besaran Sembarang
+                    </h4>
+
+                    <div class="interactive-box" style="grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="interactive-item">
+                            <div class="label">Besaran Panjang</div>
+                            <div class="value">[L]</div>
+                            <div class="desc">Satuan: meter (m)</div>
+                            <div style="margin-top:0.5rem; font-size:0.8rem; color:#3a6073;">
+                                <i class="fas fa-ruler"></i> Contoh: jarak, tinggi, lebar
+                            </div>
+                        </div>
+                        <div class="interactive-item">
+                            <div class="label">Besaran Waktu</div>
+                            <div class="value">[T]</div>
+                            <div class="desc">Satuan: sekon (s)</div>
+                            <div style="margin-top:0.5rem; font-size:0.8rem; color:#3a6073;">
+                                <i class="fas fa-clock"></i> Contoh: durasi, periode, selang
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dimensi-box" style="margin-top:1rem;">
+                        <div class="label">Dimensi Besaran Sembarang (kombinasi)</div>
+                        <div class="formula" style="font-size:1.2rem;">
+                            <span class="highlight">[Besaran] = [L]<sup>a</sup> [M]<sup>b</sup> [T]<sup>c</sup> ...</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:#6a9ab0; text-align:center;">
+                            a, b, c = pangkat (bisa positif, negatif, atau nol)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== INTERAKTIF: LATIHAN DIMENSI ===== -->
+        <div class="card card-full">
+            <div class="card-title">
+                <i class="fas fa-pencil-alt"></i> Latihan Dimensi
+                <span class="badge">Coba sendiri!</span>
+            </div>
+
+            <div class="interactive-box">
+                <div class="interactive-item">
+                    <div class="label">Besaran</div>
+                    <input type="text" id="besaranInput" placeholder="Contoh: kecepatan, gaya, energi..." style="margin-top:0.3rem;">
+                    <div style="margin-top:0.5rem; font-size:0.75rem; color:#3a6073;">
+                        Masukkan nama besaran turunan
+                    </div>
+                </div>
+                <div class="interactive-item">
+                    <div class="label">Hasil Dimensi</div>
+                    <div class="value" id="hasilDimensi" style="font-size:1.6rem;">[ ? ]</div>
+                    <div class="desc" id="hasilDesc">Masukkan besaran di samping</div>
+                    <button class="btn-calculate" onclick="cekDimensi()">
+                        <i class="fas fa-calculator"></i> Cek Dimensi
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top:1rem; padding:0.8rem 1.2rem; background:rgba(0,200,255,0.02); border-radius:1rem; border:1px solid rgba(0,200,255,0.04);">
+                <div style="font-size:0.8rem; color:#6a9ab0;">
+                    <i class="fas fa-lightbulb" style="color:#4db8ff;"></i>
+                    <strong>Tips:</strong> Tulis nama besaran seperti <span style="color:#7fd4ff;">kecepatan</span>, <span style="color:#7fd4ff;">gaya</span>, <span style="color:#7fd4ff;">energi</span>, <span style="color:#7fd4ff;">tekanan</span>, <span style="color:#7fd4ff;">volume</span>, <span style="color:#7fd4ff;">percepatan</span>, <span style="color:#7fd4ff;">daya</span>, <span style="color:#7fd4ff;">usaha</span>.
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="text-align:center; padding:2rem 0 0.5rem 0; color:#3a6073; font-size:0.7rem; letter-spacing:1px;">
+            <i class="fas fa-flask"></i> Fisika Dasar · SMA Kelas X
+            <span style="margin:0 0.8rem;">|</span>
+            <i class="fas fa-graduation-cap"></i> Besaran, Satuan, Dimensi
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA DIMENSI =====
+        const dimensiData = {
+            'kecepatan': { dimensi: '[L][T]⁻¹', desc: 'v = s / t' },
+            'percepatan': { dimensi: '[L][T]⁻²', desc: 'a = v / t' },
+            'gaya': { dimensi: '[M][L][T]⁻²', desc: 'F = m · a' },
+            'energi': { dimensi: '[M][L]²[T]⁻²', desc: 'E = F · s' },
+            'usaha': { dimensi: '[M][L]²[T]⁻²', desc: 'W = F · s' },
+            'daya': { dimensi: '[M][L]²[T]⁻³', desc: 'P = E / t' },
+            'tekanan': { dimensi: '[M][L]⁻¹[T]⁻²', desc: 'p = F / A' },
+            'volume': { dimensi: '[L]³', desc: 'V = s³' },
+            'massa jenis': { dimensi: '[M][L]⁻³', desc: 'ρ = m / V' },
+            'berat': { dimensi: '[M][L][T]⁻²', desc: 'w = m · g' },
+            'momentum': { dimensi: '[M][L][T]⁻¹', desc: 'p = m · v' },
+            'impuls': { dimensi: '[M][L][T]⁻¹', desc: 'I = F · Δt' },
+            'debit': { dimensi: '[L]³[T]⁻¹', desc: 'Q = V / t' },
+            'frekuensi': { dimensi: '[T]⁻¹', desc: 'f = 1 / T' },
+            'periode': { dimensi: '[T]', desc: 'T = t / n' },
+        };
+
+        function cekDimensi() {
+            const input = document.getElementById('besaranInput');
+            const hasil = document.getElementById('hasilDimensi');
+            const desc = document.getElementById('hasilDesc');
+
+            const key = input.value.trim().toLowerCase();
+
+            if (key === '') {
+                hasil.textContent = '[ ? ]';
+                desc.textContent = 'Masukkan nama besaran terlebih dahulu';
+                hasil.style.color = '#ff4444';
+                return;
+            }
+
+            // Cari di data
+            let found = null;
+            let foundKey = '';
+            for (const [k, v] of Object.entries(dimensiData)) {
+                if (k.includes(key) || key.includes(k)) {
+                    found = v;
+                    foundKey = k;
+                    break;
+                }
+            }
+
+            if (found) {
+                hasil.textContent = found.dimensi;
+                desc.textContent = `Rumus: ${found.desc} (${foundKey})`;
+                hasil.style.color = '#00ff88';
+            } else {
+                // Coba tebak berdasarkan kata kunci
+                if (key.includes('panjang') || key.includes('jarak') || key.includes('tinggi') || key.includes('lebar')) {
+                    hasil.textContent = '[L]';
+                    desc.textContent = 'Besaran panjang';
+                    hasil.style.color = '#7fd4ff';
+                } else if (key.includes('waktu') || key.includes('durasi') || key.includes('selang')) {
+                    hasil.textContent = '[T]';
+                    desc.textContent = 'Besaran waktu';
+                    hasil.style.color = '#7fd4ff';
+                } else if (key.includes('massa') || key.includes('berat') && !key.includes('jenis')) {
+                    hasil.textContent = '[M]';
+                    desc.textContent = 'Besaran massa';
+                    hasil.style.color = '#7fd4ff';
+                } else {
+                    hasil.textContent = '[ ? ]';
+                    desc.textContent = 'Besaran tidak ditemukan. Coba: kecepatan, gaya, energi, tekanan, volume, percepatan, daya, usaha';
+                    hasil.style.color = '#ffaa00';
+                }
+            }
+        }
+
+        // Enter key support
+        document.getElementById('besaranInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                cekDimensi();
+            }
+        });
+    </script>
+
+</body>
+</html>
