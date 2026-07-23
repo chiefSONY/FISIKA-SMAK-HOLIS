@@ -326,17 +326,13 @@
             border-color: rgba(0, 200, 255, 0.12);
         }
 
-        .btn-calculate:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
         .result-box {
             background: rgba(0, 200, 255, 0.02);
             border-radius: 1rem;
             padding: 1rem 1.2rem;
             border: 1px solid rgba(0, 200, 255, 0.04);
-            margin-top: 0.8rem;
+            margin-top: 0.5rem;
+            min-height: 120px;
         }
 
         .result-box .result-label {
@@ -348,15 +344,25 @@
 
         .result-box .result-value {
             font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             color: #00ff88;
-            margin-top: 0.2rem;
+            margin-top: 0.3rem;
         }
 
         .result-box .result-detail {
             font-size: 0.85rem;
             color: #6a9ab0;
             margin-top: 0.2rem;
+        }
+
+        .result-box .result-step {
+            font-size: 0.8rem;
+            color: #6a9ab0;
+            margin-top: 0.3rem;
+            padding: 0.3rem 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
         }
 
         .example-box {
@@ -378,6 +384,29 @@
         }
 
         .example-box .highlight {
+            color: #00ff88;
+        }
+
+        .dimensi-variabel {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .dimensi-variabel span {
+            background: rgba(0, 200, 255, 0.02);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 200, 255, 0.04);
+        }
+
+        .dimensi-variabel .var {
+            color: #7fd4ff;
+        }
+
+        .dimensi-variabel .dim {
             color: #00ff88;
         }
 
@@ -422,6 +451,9 @@
             }
             .step-list li {
                 font-size: 0.85rem;
+            }
+            .result-box .result-value {
+                font-size: 1.1rem;
             }
         }
 
@@ -710,7 +742,20 @@
 
             <div style="font-size:0.9rem; color:#6a9ab0; margin-bottom:1rem;">
                 <i class="fas fa-info-circle" style="color:#4db8ff;"></i>
-                Buat persamaan dengan variabel sembarang. Gunakan <span style="color:#7fd4ff;">v</span> (kecepatan), <span style="color:#7fd4ff;">s</span> (jarak), <span style="color:#7fd4ff;">t</span> (waktu), atau variabel lain yang melibatkan panjang dan waktu.
+                Buat persamaan dengan variabel sembarang. Gunakan <span style="color:#7fd4ff;">v</span> (kecepatan), <span style="color:#7fd4ff;">s</span> (jarak), <span style="color:#7fd4ff;">t</span> (waktu), <span style="color:#7fd4ff;">a</span> (percepatan), atau variabel lain yang melibatkan panjang dan waktu.
+            </div>
+
+            <!-- Dimensi Variabel Dasar -->
+            <div style="margin-bottom:1rem;">
+                <div style="font-size:0.7rem; color:#6a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.3rem;">
+                    <i class="fas fa-table"></i> Dimensi Variabel Dasar
+                </div>
+                <div class="dimensi-variabel">
+                    <span><span class="var">v</span> (kecepatan) = <span class="dim">[L][T]⁻¹</span></span>
+                    <span><span class="var">s</span> (jarak) = <span class="dim">[L]</span></span>
+                    <span><span class="var">t</span> (waktu) = <span class="dim">[T]</span></span>
+                    <span><span class="var">a</span> (percepatan) = <span class="dim">[L][T]⁻²</span></span>
+                </div>
             </div>
 
             <div class="grid-2">
@@ -727,11 +772,11 @@
                     <div class="interactive-item" style="margin-top:0.8rem;">
                         <div class="label">Yang Dicari</div>
                         <select id="cariInput" style="margin-top:0.3rem;">
+                            <option value="semua">Semua konstanta</option>
                             <option value="A">Konstanta A</option>
                             <option value="B">Konstanta B</option>
                             <option value="C">Konstanta C</option>
                             <option value="k">Konstanta k</option>
-                            <option value="semua">Semua konstanta</option>
                         </select>
                         <div style="margin-top:0.3rem; font-size:0.75rem; color:#3a6073;">
                             Pilih konstanta yang ingin dicari dimensinya
@@ -749,6 +794,7 @@
                         <div class="result-label">Hasil Dimensi</div>
                         <div class="result-value" id="hasilSembarangValue">[ ? ]</div>
                         <div class="result-detail" id="hasilSembarangDetail">Masukkan persamaan di samping</div>
+                        <div class="result-step" id="hasilSembarangStep" style="display:none;"></div>
                     </div>
 
                     <div class="example-box">
@@ -760,27 +806,6 @@
                         • <code>a = A·t + B</code> → a = percepatan, t = waktu<br>
                         • <code>s = A·t^(1/2) + B·t</code> → s = jarak, t = waktu
                     </div>
-                </div>
-            </div>
-
-            <!-- Tabel Dimensi Variabel -->
-            <div style="margin-top:1.5rem;">
-                <div style="font-size:0.75rem; color:#6a9ab0; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">
-                    <i class="fas fa-table"></i> Dimensi Variabel Dasar
-                </div>
-                <div style="display:flex; gap:1rem; flex-wrap:wrap; font-size:0.9rem;">
-                    <span style="background:rgba(0,200,255,0.02); padding:0.3rem 1rem; border-radius:20px; border:1px solid rgba(0,200,255,0.04);">
-                        <span style="color:#7fd4ff;">v</span> (kecepatan) = <span style="color:#00ff88;">[L][T]⁻¹</span>
-                    </span>
-                    <span style="background:rgba(0,200,255,0.02); padding:0.3rem 1rem; border-radius:20px; border:1px solid rgba(0,200,255,0.04);">
-                        <span style="color:#7fd4ff;">s</span> (jarak) = <span style="color:#00ff88;">[L]</span>
-                    </span>
-                    <span style="background:rgba(0,200,255,0.02); padding:0.3rem 1rem; border-radius:20px; border:1px solid rgba(0,200,255,0.04);">
-                        <span style="color:#7fd4ff;">t</span> (waktu) = <span style="color:#00ff88;">[T]</span>
-                    </span>
-                    <span style="background:rgba(0,200,255,0.02); padding:0.3rem 1rem; border-radius:20px; border:1px solid rgba(0,200,255,0.04);">
-                        <span style="color:#7fd4ff;">a</span> (percepatan) = <span style="color:#00ff88;">[L][T]⁻²</span>
-                    </span>
                 </div>
             </div>
         </div>
@@ -801,4 +826,331 @@
             'gaya': { dimensi: '[M][L][T]⁻²', desc: 'F = m · a' },
             'energi': { dimensi: '[M][L]²[T]⁻²', desc: 'E = F · s' },
             'usaha': { dimensi: '[M][L]²[T]⁻²', desc: 'W = F · s' },
-            'daya': { dimensi
+            'daya': { dimensi: '[M][L]²[T]⁻³', desc: 'P = E / t' },
+            'tekanan': { dimensi: '[M][L]⁻¹[T]⁻²', desc: 'p = F / A' },
+            'volume': { dimensi: '[L]³', desc: 'V = s³' },
+            'massa jenis': { dimensi: '[M][L]⁻³', desc: 'ρ = m / V' },
+            'berat': { dimensi: '[M][L][T]⁻²', desc: 'w = m · g' },
+            'momentum': { dimensi: '[M][L][T]⁻¹', desc: 'p = m · v' },
+            'impuls': { dimensi: '[M][L][T]⁻¹', desc: 'I = F · Δt' },
+            'debit': { dimensi: '[L]³[T]⁻¹', desc: 'Q = V / t' },
+            'frekuensi': { dimensi: '[T]⁻¹', desc: 'f = 1 / T' },
+            'periode': { dimensi: '[T]', desc: 'T = t / n' },
+        };
+
+        // ===== CEK DIMENSI BESARAN TURUNAN =====
+        function cekDimensi() {
+            const input = document.getElementById('besaranInput');
+            const hasil = document.getElementById('hasilDimensi');
+            const desc = document.getElementById('hasilDesc');
+
+            const key = input.value.trim().toLowerCase();
+
+            if (key === '') {
+                hasil.textContent = '[ ? ]';
+                desc.textContent = 'Masukkan nama besaran terlebih dahulu';
+                hasil.style.color = '#ff4444';
+                return;
+            }
+
+            let found = null;
+            let foundKey = '';
+            for (const [k, v] of Object.entries(dimensiData)) {
+                if (k.includes(key) || key.includes(k)) {
+                    found = v;
+                    foundKey = k;
+                    break;
+                }
+            }
+
+            if (found) {
+                hasil.textContent = found.dimensi;
+                desc.textContent = `Rumus: ${found.desc} (${foundKey})`;
+                hasil.style.color = '#00ff88';
+            } else {
+                if (key.includes('panjang') || key.includes('jarak') || key.includes('tinggi') || key.includes('lebar')) {
+                    hasil.textContent = '[L]';
+                    desc.textContent = 'Besaran panjang';
+                    hasil.style.color = '#7fd4ff';
+                } else if (key.includes('waktu') || key.includes('durasi') || key.includes('selang')) {
+                    hasil.textContent = '[T]';
+                    desc.textContent = 'Besaran waktu';
+                    hasil.style.color = '#7fd4ff';
+                } else if (key.includes('massa') && !key.includes('jenis')) {
+                    hasil.textContent = '[M]';
+                    desc.textContent = 'Besaran massa';
+                    hasil.style.color = '#7fd4ff';
+                } else {
+                    hasil.textContent = '[ ? ]';
+                    desc.textContent = 'Besaran tidak ditemukan. Coba: kecepatan, gaya, energi, tekanan, volume, percepatan, daya, usaha';
+                    hasil.style.color = '#ffaa00';
+                }
+            }
+        }
+
+        // ===== CEK DIMENSI BESARAN SEMBARANG =====
+        function cekDimensiSembarang() {
+            const persamaan = document.getElementById('persamaanInput').value.trim();
+            const cari = document.getElementById('cariInput').value;
+            const hasilValue = document.getElementById('hasilSembarangValue');
+            const hasilDetail = document.getElementById('hasilSembarangDetail');
+            const hasilStep = document.getElementById('hasilSembarangStep');
+
+            if (persamaan === '') {
+                hasilValue.textContent = '[ ? ]';
+                hasilDetail.textContent = 'Masukkan persamaan terlebih dahulu';
+                hasilValue.style.color = '#ff4444';
+                hasilStep.style.display = 'none';
+                return;
+            }
+
+            try {
+                // Parse persamaan
+                const result = parsePersamaan(persamaan, cari);
+                
+                if (result.error) {
+                    hasilValue.textContent = '[ ? ]';
+                    hasilDetail.textContent = result.error;
+                    hasilValue.style.color = '#ffaa00';
+                    hasilStep.style.display = 'none';
+                    return;
+                }
+
+                // Tampilkan hasil
+                hasilValue.textContent = result.dimensi;
+                hasilValue.style.color = '#00ff88';
+                hasilDetail.textContent = result.deskripsi;
+                
+                if (result.langkah) {
+                    hasilStep.textContent = result.langkah;
+                    hasilStep.style.display = 'block';
+                } else {
+                    hasilStep.style.display = 'none';
+                }
+
+            } catch (e) {
+                hasilValue.textContent = '[ ? ]';
+                hasilDetail.textContent = 'Terjadi kesalahan parsing';
+                hasilValue.style.color = '#ff4444';
+                hasilStep.style.display = 'none';
+                console.error(e);
+            }
+        }
+
+        // ===== PARSER PERSAMAAN =====
+        function parsePersamaan(persamaan, cari) {
+            // Bersihkan persamaan
+            let eq = persamaan.replace(/\s/g, '');
+            
+            // Deteksi variabel yang digunakan
+            const variabel = {
+                'v': '[L][T]⁻¹',  // kecepatan
+                's': '[L]',        // jarak
+                't': '[T]',        // waktu
+                'a': '[L][T]⁻²'    // percepatan
+            };
+
+            // Cari sisi kiri (variabel utama)
+            const parts = eq.split('=');
+            if (parts.length !== 2) {
+                return { error: 'Format harus: variabel = persamaan' };
+            }
+
+            const leftVar = parts[0].trim();
+            const rightSide = parts[1].trim();
+
+            // Cek apakah variabel kiri dikenal
+            if (!variabel[leftVar]) {
+                return { error: `Variabel '${leftVar}' tidak dikenal. Gunakan: v, s, t, a` };
+            }
+
+            const leftDim = variabel[leftVar];
+            const rightTerms = parseTerms(rightSide);
+
+            // Cari konstanta yang diminta
+            const konstantaDicari = cari === 'semua' ? ['A', 'B', 'C', 'k'] : [cari];
+            
+            let hasilDimensi = {};
+            let langkah = `Dimensi ${leftVar} = ${leftDim}\n`;
+
+            // Untuk setiap konstanta yang dicari
+            for (const konst of konstantaDicari) {
+                if (rightTerms[konst]) {
+                    const term = rightTerms[konst];
+                    // Dimensi konstanta = dimensi kiri / dimensi term (tanpa konstanta)
+                    const dimTerm = getTermDimension(term, variabel);
+                    const dimKonst = divideDimension(leftDim, dimTerm);
+                    hasilDimensi[konst] = dimKonst;
+                    langkah += `${konst} = ${leftDim} / ${dimTerm} = ${dimKonst}\n`;
+                } else if (konst === 'A' || konst === 'B' || konst === 'C' || konst === 'k') {
+                    // Konstanta tidak ditemukan dalam persamaan
+                    if (cari === 'semua') {
+                        // Skip jika tidak ditemukan
+                        continue;
+                    } else {
+                        return { error: `Konstanta '${konst}' tidak ditemukan dalam persamaan` };
+                    }
+                }
+            }
+
+            // Format hasil
+            let deskripsi = '';
+            let dimensiStr = '';
+            
+            if (cari === 'semua') {
+                const keys = Object.keys(hasilDimensi);
+                if (keys.length === 0) {
+                    return { error: 'Tidak ada konstanta yang ditemukan dalam persamaan' };
+                }
+                dimensiStr = keys.map(k => `${k} = ${hasilDimensi[k]}`).join(', ');
+                deskripsi = `Dimensi konstanta dalam persamaan`;
+            } else {
+                if (!hasilDimensi[cari]) {
+                    return { error: `Konstanta '${cari}' tidak ditemukan` };
+                }
+                dimensiStr = hasilDimensi[cari];
+                deskripsi = `Dimensi konstanta ${cari}`;
+            }
+
+            return {
+                dimensi: dimensiStr,
+                deskripsi: deskripsi,
+                langkah: langkah.trim()
+            };
+        }
+
+        // ===== PARSE TERMS =====
+        function parseTerms(expression) {
+            // Deteksi pola: A·t, B·t², C/t, A·√t, B·t^(1/2), dll
+            const terms = {};
+            
+            // Pola untuk konstanta + variabel
+            const patterns = [
+                /([A-Z])\s*[·*]?\s*([a-z])\s*\^?\s*\(?\s*([\d\/\.]+)\s*\)?/g, // A·t^2 atau A·t^(1/2)
+                /([A-Z])\s*[·*]?\s*([a-z])/g, // A·t
+                /([A-Z])\s*\/\s*([a-z])\s*\^?\s*\(?\s*([\d\/\.]+)\s*\)?/g, // A/t^2
+                /([A-Z])\s*\/\s*([a-z])/g, // A/t
+                /([A-Z])\s*\*\s*√\s*\(?\s*([a-z])\s*\)?/g, // A*√t
+                /([A-Z])\s*\/\s*√\s*\(?\s*([a-z])\s*\)?/g, // A/√t
+            ];
+
+            // Coba setiap pola
+            for (const pattern of patterns) {
+                let match;
+                while ((match = pattern.exec(expression)) !== null) {
+                    const konst = match[1];
+                    const varName = match[2] || '';
+                    let pangkat = match[3] || '1';
+                    
+                    // Proses pangkat
+                    if (pangkat.includes('/')) {
+                        const parts2 = pangkat.split('/');
+                        pangkat = parseFloat(parts2[0]) / parseFloat(parts2[1]);
+                    } else {
+                        pangkat = parseFloat(pangkat) || 1;
+                    }
+
+                    // Simpan term
+                    terms[konst] = {
+                        variabel: varName,
+                        pangkat: pangkat,
+                        isDiv: pattern.source.includes('/') && !pattern.source.includes('*')
+                    };
+                }
+            }
+
+            // Jika tidak ada pola yang cocok, coba pendekatan sederhana
+            if (Object.keys(terms).length === 0) {
+                // Coba split berdasarkan + atau -
+                const parts2 = expression.split(/[+-]/);
+                for (const part of parts2) {
+                    const trimmed = part.trim();
+                    if (trimmed === '') continue;
+                    
+                    // Cari konstanta (huruf besar) dan variabel (huruf kecil)
+                    const konstMatch = trimmed.match(/^([A-Z])/);
+                    const varMatch = trimmed.match(/([a-z])(?:\^\(?([\d\/]+)\)?)?/);
+                    
+                    if (konstMatch && varMatch) {
+                        const konst = konstMatch[1];
+                        const varName = varMatch[1];
+                        let pangkat = varMatch[2] || '1';
+                        
+                        if (pangkat.includes('/')) {
+                            const p = pangkat.split('/');
+                            pangkat = parseFloat(p[0]) / parseFloat(p[1]);
+                        } else {
+                            pangkat = parseFloat(pangkat) || 1;
+                        }
+                        
+                        const isDiv = trimmed.includes('/');
+                        
+                        terms[konst] = {
+                            variabel: varName,
+                            pangkat: isDiv ? -pangkat : pangkat,
+                            isDiv: isDiv
+                        };
+                    }
+                }
+            }
+
+            return terms;
+        }
+
+        // ===== GET DIMENSI TERM =====
+        function getTermDimension(term, variabel) {
+            const varName = term.variabel;
+            let pangkat = term.pangkat || 1;
+            
+            // Jika variabel tidak dikenal
+            if (!variabel[varName]) {
+                return '[?]';
+            }
+
+            const dimVar = variabel[varName];
+            
+            // Jika pangkat negatif (pembagian)
+            if (pangkat < 0) {
+                return `${dimVar}⁻${Math.abs(pangkat)}`;
+            } else if (pangkat === 1) {
+                return dimVar;
+            } else if (pangkat === 0) {
+                return '[1]';
+            } else {
+                return `${dimVar}${pangkat}`;
+            }
+        }
+
+        // ===== DIVIDE DIMENSION =====
+        function divideDimension(dim1, dim2) {
+            // Sederhana: jika dim2 adalah [1] atau kosong
+            if (dim2 === '[1]' || dim2 === '') {
+                return dim1;
+            }
+
+            // Jika sama, hasilnya [1]
+            if (dim1 === dim2) {
+                return '[1]';
+            }
+
+            // Gabungkan
+            return `${dim1} / ${dim2}`;
+        }
+
+        // Enter key support untuk besaran turunan
+        document.getElementById('besaranInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                cekDimensi();
+            }
+        });
+
+        // Enter key support untuk besaran sembarang
+        document.getElementById('persamaanInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                cekDimensiSembarang();
+            }
+        });
+    </script>
+
+</body>
+</html>
