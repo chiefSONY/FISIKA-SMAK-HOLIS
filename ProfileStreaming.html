@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sony Kristanto · Physics Educator · Live Streaming</title>
+  <title>Sony Kristanto · Physics Educator · School of Future</title>
   <!-- Font & ikon -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,22 +77,20 @@
       100% { opacity: 1; transform: scale(1.2); }
     }
 
-    /* container utama: flex row untuk profil + streaming */
+    /* container utama: grid 2 kolom */
     .main-container {
       position: relative;
       z-index: 1;
       max-width: 1400px;
       width: 100%;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 1.8rem;
       align-items: stretch;
     }
 
-    /* kartu profil — glassmorphism futuristik (sebelah kiri) */
+    /* kartu profil — glassmorphism futuristik */
     .card {
-      flex: 1 1 480px;
-      min-width: 320px;
       background: rgba(10, 20, 30, 0.6);
       backdrop-filter: blur(24px) saturate(1.2);
       -webkit-backdrop-filter: blur(24px) saturate(1.2);
@@ -114,10 +112,8 @@
         0 0 80px rgba(0, 150, 255, 0.08);
     }
 
-    /* ===== STREAMING PANEL (sebelah kanan) ===== */
+    /* ===== STREAMING PANEL (kanan) ===== */
     .stream-panel {
-      flex: 1 1 480px;
-      min-width: 320px;
       background: rgba(10, 20, 30, 0.5);
       backdrop-filter: blur(20px) saturate(1.1);
       -webkit-backdrop-filter: blur(20px) saturate(1.1);
@@ -191,10 +187,10 @@
       50% { opacity: 0.2; }
     }
 
-    /* video wrapper */
+    /* video wrapper untuk ESP (atas) */
     .video-wrapper {
       flex: 1;
-      min-height: 340px;
+      min-height: 200px;
       background: rgba(0, 0, 0, 0.4);
       border-radius: 1.8rem;
       overflow: hidden;
@@ -203,6 +199,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-bottom: 0.8rem;
     }
 
     .video-wrapper video {
@@ -216,25 +213,110 @@
     .video-wrapper .placeholder {
       position: absolute;
       color: #4a7a8f;
-      font-size: 1rem;
+      font-size: 0.9rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.8rem;
+      gap: 0.6rem;
       pointer-events: none;
     }
 
     .video-wrapper .placeholder i {
-      font-size: 3rem;
+      font-size: 2.8rem;
       color: rgba(77, 184, 255, 0.15);
     }
 
-    /* control bar kecil di bawah video */
+    .video-label {
+      position: absolute;
+      top: 0.8rem;
+      left: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.65rem;
+      color: #8bcbff;
+      border: 1px solid rgba(0, 200, 255, 0.08);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      z-index: 2;
+    }
+
+    .video-label i {
+      font-size: 0.6rem;
+      color: #4db8ff;
+    }
+
+    /* webcam wrapper (bawah) */
+    .webcam-wrapper {
+      flex: 1;
+      min-height: 180px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 1.8rem;
+      overflow: hidden;
+      border: 1px solid rgba(0, 200, 255, 0.06);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.2rem;
+    }
+
+    .webcam-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #0a1218;
+    }
+
+    .webcam-wrapper .placeholder {
+      position: absolute;
+      color: #4a7a8f;
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: none;
+    }
+
+    .webcam-wrapper .placeholder i {
+      font-size: 2.8rem;
+      color: rgba(77, 184, 255, 0.15);
+    }
+
+    .webcam-label {
+      position: absolute;
+      top: 0.8rem;
+      left: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.65rem;
+      color: #8bcbff;
+      border: 1px solid rgba(0, 200, 255, 0.08);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      z-index: 2;
+    }
+
+    .webcam-label i {
+      font-size: 0.6rem;
+      color: #4db8ff;
+    }
+
+    /* kontrol bawah stream */
     .stream-controls {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 1rem;
+      margin-top: 0.8rem;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
@@ -276,7 +358,7 @@
       color: #b0dfff;
     }
 
-    /* ===== PROFIL CARD (isi sama seperti sebelumnya) ===== */
+    /* ===== PROFIL CARD ===== */
     .profile-header {
       display: flex;
       align-items: center;
@@ -424,7 +506,7 @@
 
     .spec-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 0.7rem;
       margin: 1.8rem 0 1.8rem 0;
     }
@@ -555,7 +637,7 @@
       color: #3a7a8f;
     }
 
-    /* school building (di profil) */
+    /* school building */
     .school-building {
       margin: 1.2rem 0 0.2rem 0;
       border-radius: 2rem;
@@ -659,19 +741,16 @@
     }
 
     /* responsive */
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       .main-container {
-        flex-direction: column;
-      }
-      .card, .stream-panel {
-        flex: 1 1 auto;
-        width: 100%;
+        grid-template-columns: 1fr;
+        max-width: 800px;
       }
       .stream-panel {
-        min-height: 340px;
+        order: 2;
       }
-      .video-wrapper {
-        min-height: 280px;
+      .card {
+        order: 1;
       }
     }
 
@@ -713,8 +792,8 @@
         font-size: 0.95rem;
         padding: 0.8rem 1.2rem;
       }
-      .video-wrapper {
-        min-height: 220px;
+      .video-wrapper, .webcam-wrapper {
+        min-height: 160px;
       }
     }
   </style>
@@ -749,7 +828,7 @@
 
       <div class="school-block">
         <i class="fas fa-school"></i>
-        <span class="school-name">SMA BPK PENABUR HOLIS Bandung</span>
+        <span class="school-name">SMA BPK PENABUR HOLIS</span>
         <span class="brand"><i class="fas fa-rocket" style="margin-right: 4px;"></i> School of Future</span>
       </div>
 
@@ -794,12 +873,12 @@
 
       <div class="building-line"></div>
 
-      <!-- spesialisasi -->
+      <!-- spesialisasi: Mekanika, Kinematika, Optik, Elektromagnetik -->
       <div class="spec-grid">
-        <div class="spec-item"><i class="fas fa-arrows-spin"></i> Kinematika</div>
         <div class="spec-item"><i class="fas fa-gear"></i> Mekanika</div>
+        <div class="spec-item"><i class="fas fa-arrows-spin"></i> Kinematika</div>
+        <div class="spec-item"><i class="fas fa-eye"></i> Optik</div>
         <div class="spec-item"><i class="fas fa-bolt"></i> Elektromagnetik</div>
-        <div class="spec-item"><i class="fas fa-temperature-high"></i> Suhu & Kalor</div>
       </div>
 
       <!-- quote -->
@@ -834,21 +913,35 @@
           <span class="status-dot"></span>
           <span>LIVE</span>
           <span style="opacity:0.5; margin-left: 0.2rem;">·</span>
-          <span style="opacity:0.6;">kamera IP</span>
+          <span style="opacity:0.6;">ESP + Webcam</span>
         </div>
       </div>
 
-      <!-- video wrapper -->
+      <!-- ESP Stream (atas) -->
       <div class="video-wrapper">
-        <video id="streamVideo" autoplay muted playsinline>
+        <video id="espStream" autoplay muted playsinline>
           <source src="http://10.101.209.119/" type="video/mp4">
-          <!-- fallback jika tidak support -->
-          Your browser does not support the video tag.
         </video>
-        <div class="placeholder" id="placeholderFallback">
+        <div class="placeholder" id="espPlaceholder">
+          <i class="fas fa-microchip"></i>
+          <span>Menghubungkan ke ESP...</span>
+          <span style="font-size:0.65rem; opacity:0.5;">http://10.101.209.119/</span>
+        </div>
+        <div class="video-label">
+          <i class="fas fa-microchip"></i> ESP32-CAM · 10.101.209.119
+        </div>
+      </div>
+
+      <!-- Webcam Stream (bawah) -->
+      <div class="webcam-wrapper">
+        <video id="webcamStream" autoplay muted playsinline></video>
+        <div class="placeholder" id="webcamPlaceholder">
           <i class="fas fa-camera"></i>
-          <span>Menghubungkan ke kamera...</span>
-          <span style="font-size:0.7rem; opacity:0.5;">http://10.101.209.119/</span>
+          <span>Mengakses webcam...</span>
+          <span style="font-size:0.65rem; opacity:0.5;">izinkan akses kamera</span>
+        </div>
+        <div class="webcam-label">
+          <i class="fas fa-camera"></i> Webcam · lokal
         </div>
       </div>
 
@@ -856,64 +949,99 @@
       <div class="stream-controls">
         <div class="info">
           <i class="fas fa-circle" style="color: #00ff88; font-size: 0.5rem;"></i>
-          <span>Streaming dari <strong style="color:#8bcbff;">10.101.209.119</strong></span>
+          <span>2 sumber aktif</span>
         </div>
         <div class="actions">
-          <a href="#" onclick="reloadStream(); return false;"><i class="fas fa-sync-alt"></i> Refresh</a>
-          <a href="http://10.101.209.119/" target="_blank"><i class="fas fa-external-link-alt"></i> Buka</a>
+          <a href="#" onclick="reloadESP(); return false;"><i class="fas fa-sync-alt"></i> Refresh ESP</a>
+          <a href="http://10.101.209.119/" target="_blank"><i class="fas fa-external-link-alt"></i> Buka ESP</a>
         </div>
       </div>
 
       <!-- catatan kecil -->
       <div style="margin-top: 0.8rem; font-size: 0.65rem; color: #3a6073; text-align: center; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.8rem;">
         <i class="fas fa-shield-alt" style="margin-right: 0.3rem;"></i> 
-        Stream aman · Hanya untuk keperluan presentasi
+        Stream aman · ESP & Webcam untuk pembelajaran interaktif
       </div>
     </div>
   </div>
 
   <script>
-    // Elemen video dan placeholder
-    const video = document.getElementById('streamVideo');
-    const placeholder = document.getElementById('placeholderFallback');
+    // ===== ESP STREAM =====
+    const espVideo = document.getElementById('espStream');
+    const espPlaceholder = document.getElementById('espPlaceholder');
 
-    // Coba load stream dari kamera IP
-    // Karena kamera IP mungkin mengirimkan MJPEG atau stream lain,
-    // kita coba set src dan jika gagal, tampilkan placeholder.
-    function initStream() {
-      // Gunakan src langsung ke URL kamera
-      // Untuk beberapa kamera IP, mungkin perlu ditambahkan parameter
-      video.src = 'http://10.101.209.119/';
+    function initESP() {
+      espVideo.src = 'http://10.101.209.119/';
       
-      // Event listener untuk error
-      video.onerror = function() {
-        console.warn('Gagal memuat stream dari kamera IP. Menampilkan placeholder.');
-        placeholder.style.display = 'flex';
-        video.style.display = 'none';
+      espVideo.onerror = function() {
+        console.warn('ESP stream gagal dimuat.');
+        espPlaceholder.style.display = 'flex';
+        espVideo.style.display = 'none';
       };
 
-      // Jika video berhasil dimuat, sembunyikan placeholder
-      video.oncanplay = function() {
-        placeholder.style.display = 'none';
-        video.style.display = 'block';
+      espVideo.oncanplay = function() {
+        espPlaceholder.style.display = 'none';
+        espVideo.style.display = 'block';
       };
 
-      // Jika gagal memuat karena network error, tampilkan placeholder
-      video.onstalled = function() {
-        placeholder.style.display = 'flex';
-        video.style.display = 'none';
+      espVideo.onstalled = function() {
+        espPlaceholder.style.display = 'flex';
+        espVideo.style.display = 'none';
       };
 
-      // Coba muat ulang jika gagal
       setTimeout(() => {
-        if (video.readyState === 0) {
-          placeholder.style.display = 'flex';
-          video.style.display = 'none';
+        if (espVideo.readyState === 0) {
+          espPlaceholder.style.display = 'flex';
+          espVideo.style.display = 'none';
         }
       }, 5000);
     }
 
-    // Fungsi refresh stream
-    function reloadStream() {
-      placeholder.style.display = 'flex';
-      video.style.display = '
+    function reloadESP() {
+      espPlaceholder.style.display = 'flex';
+      espVideo.style.display = 'none';
+      espVideo.src = '';
+      setTimeout(() => {
+        espVideo.src = 'http://10.101.209.119/';
+        espVideo.load();
+      }, 300);
+    }
+
+    // ===== WEBCAM STREAM =====
+    const webcamVideo = document.getElementById('webcamStream');
+    const webcamPlaceholder = document.getElementById('webcamPlaceholder');
+
+    async function initWebcam() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: 'user'
+          },
+          audio: false 
+        });
+        webcamVideo.srcObject = stream;
+        webcamVideo.onloadedmetadata = () => {
+          webcamVideo.play();
+          webcamPlaceholder.style.display = 'none';
+          webcamVideo.style.display = 'block';
+        };
+      } catch (err) {
+        console.warn('Webcam tidak dapat diakses:', err);
+        webcamPlaceholder.innerHTML = `
+          <i class="fas fa-camera-slash"></i>
+          <span>Webcam tidak tersedia</span>
+          <span style="font-size:0.65rem; opacity:0.5;">izin kamera diperlukan</span>
+        `;
+        webcamPlaceholder.style.display = 'flex';
+        webcamVideo.style.display = 'none';
+      }
+    }
+
+    // Inisialisasi
+    initESP();
+    initWebcam();
+  </script>
+</body>
+</html>
