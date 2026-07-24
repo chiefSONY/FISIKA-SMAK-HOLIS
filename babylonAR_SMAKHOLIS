@@ -1,1 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR SMA BPK PENABUR HOLIS - Babylon.js</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            display: block;
+        }
+        
+        /* Loading Screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease;
+        }
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loading .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        #loading h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        #loading p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #4a90d9;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px 0;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
+        /* UI Overlay */
+        #ui-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+            pointer-events: none;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 90%;
+        }
+        #ui-overlay h1 {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        #ui-overlay .subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        #ui-overlay .tag {
+            color: #4a90d9;
+            font-weight: 500;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        #ar-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #4ade80;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
+        #ar-status .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        #hint {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            text-align: center;
+            pointer-events: none;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        #hint.visible {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            #ui-overlay { padding: 10px 16px; }
+            #ui-overlay h1 { font-size: 0.9rem; }
+            #loading h2 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading -->
+    <div id="loading">
+        <div class="logo">🏫</div>
+        <h2>SMA BPK PENABUR HOLIS</h2>
+        <p>Bandung, Jawa Barat</p>
+        <div class="spinner"></div>
+        <p style="font-size:0.8rem; opacity:0.5;">Menyiapkan Simulasi AR...</p>
+    </div>
+
+    <!-- AR Status -->
+    <div id="ar-status">
+        <span class="dot"></span> AR Ready
+    </div>
+
+    <!-- Hint -->
+    <div id="hint" class="visible">🔍 Gerakkan kamera untuk melihat gedung</div>
+
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+        <h1>🏛️ SMA BPK PENABUR HOLIS</h1>
+        <div class="subtitle">Komplek Taman Holis Indah Blok A, Bandung Kulon</div>
+        <div class="tag">#smaholisseru • #loveinunity</div>
+    </div>
+
+    <!-- Canvas -->
+    <canvas id="canvas"></canvas>
+
+    <!-- Babylon.js -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/pep.js"></script>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const canvas = document.getElementById('canvas');
+            const engine = new BABYLON.Engine(canvas, true, {
+                preserveDrawingBuffer: true,
+                stencil: true,
+                antialias: true
+            });
+
+            // --- Create Scene ---
+            const createScene = async () => {
+                const scene = new BABYLON.Scene(engine);
+                scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+
+                // Camera - will be replaced by XR camera
+                const camera = new BABYLON.UniversalCamera('camera', new BABYLON.Vector3(0, 0, 0), scene);
+                camera.setPosition(new BABYLON.Vector3(0, 0, 0));
+
+                // --- Build Model Function ---
+                const buildSchoolModel = (parent) => {
+                    const group = new BABYLON.TransformNode('schoolGroup', scene);
+                    group.position.set(0, 0, 1.8); // Place in front of camera
+                    group.scaling.setAll(0.22);
+
+                    // Materials
+                    const facadeMat = new BABYLON.StandardMaterial('facade', scene);
+                    facadeMat.diffuseColor = new BABYLON.Color3(0.82, 0.84, 0.88);
+                    facadeMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+
+                    const accentMat = new BABYLON.StandardMaterial('accent', scene);
+                    accentMat.diffuseColor = new BABYLON.Color3(0.15, 0.35, 0.65);
+                    accentMat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+
+                    const windowMat = new BABYLON.StandardMaterial('window', scene);
+                    windowMat.diffuseColor = new BABYLON.Color3(0.1, 0.3, 0.6);
+                    windowMat.specularColor = new BABYLON.Color3(0.2, 0.3, 0.5);
+                    windowMat.alpha = 0.6;
+
+                    const glassMat = new BABYLON.StandardMaterial('glass', scene);
+                    glassMat.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.85);
+                    glassMat.alpha = 0.25;
+                    glassMat.specularColor = new BABYLON.Color3(0.3, 0.4, 0.6);
+
+                    const roofMat = new BABYLON.StandardMaterial('roof', scene);
+                    roofMat.diffuseColor = new BABYLON.Color3(0.3, 0.32, 0.35);
+
+                    const greenMat = new BABYLON.StandardMaterial('green', scene);
+                    greenMat.diffuseColor = new BABYLON.Color3(0.2, 0.55, 0.15);
+
+                    const crossMat = new BABYLON.StandardMaterial('cross', scene);
+                    crossMat.diffuseColor = new BABYLON.Color3(0.7, 0.1, 0.1);
+                    crossMat.emissiveColor = new BABYLON.Color3(0.2, 0.02, 0.02);
+
+                    const logoMat = new BABYLON.StandardMaterial('logo', scene);
+                    logoMat.diffuseColor = new BABYLON.Color3(0.9, 0.7, 0.1);
+                    logoMat.emissiveColor = new BABYLON.Color3(0.3, 0.2, 0.02);
+
+                    // --- Main Building Body ---
+                    // Base (4 floors)
+                    const mainBody = BABYLON.MeshBuilder.CreateBox('mainBody', {
+                        width: 4.0,
+                        height: 3.4,
+                        depth: 1.6
+                    }, scene);
+                    mainBody.material = facadeMat;
+                    mainBody.position.y = 1.7;
+                    mainBody.parent = group;
+
+                    // Wing / Extension
+                    const wing = BABYLON.MeshBuilder.CreateBox('wing', {
+                        width: 1.8,
+                        height: 2.2,
+                        depth: 1.2
+                    }, scene);
+                    wing.material = facadeMat;
+                    wing.position.set(2.9, 1.1, 0);
+                    wing.parent = group;
+
+                    // Top floor / penthouse
+                    const topFloor = BABYLON.MeshBuilder.CreateBox('topFloor', {
+                        width: 3.0,
+                        height: 0.8,
+                        depth: 1.4
+                    }, scene);
+                    topFloor.material = accentMat;
+                    topFloor.position.set(0, 3.9, 0);
+                    topFloor.parent = group;
+
+                    // --- Facade details: Horizontal fins (grill) ---
+                    const finMat = new BABYLON.StandardMaterial('fin', scene);
+                    finMat.diffuseColor = new BABYLON.Color3(0.25, 0.5, 0.8);
+
+                    for (let i = 0; i < 10; i++) {
+                        const yPos = 0.2 + i * 0.38;
+                        const fin = BABYLON.MeshBuilder.CreateBox('fin_' + i, {
+                            width: 0.04,
+                            height: 0.04,
+                            depth: 1.4
+                        }, scene);
+                        fin.material = finMat;
+                        fin.position.set(0, yPos, 0.82);
+                        fin.parent = group;
+                    }
+
+                    // Vertical fins (partial)
+                    for (let i = 0; i < 6; i++) {
+                        const xPos = -1.8 + i * 0.72;
+                        const vfin = BABYLON.MeshBuilder.CreateBox('vfin_' + i, {
+                            width: 0.03,
+                            height: 0.5,
+                            depth: 0.03
+                        }, scene);
+                        vfin.material = finMat;
+                        vfin.position.set(xPos, 1.6, 0.85);
+                        vfin.parent = group;
+                    }
+
+                    // --- Windows ---
+                    for (let row = 0; row < 4; row++) {
+                        for (let col = 0; col < 5; col++) {
+                            const win = BABYLON.MeshBuilder.CreateBox('win_' + row + '_' + col, {
+                                width: 0.3,
+                                height: 0.4,
+                                depth: 0.02
+                            }, scene);
+                            win.material = windowMat;
+                            win.position.set(-1.7 + col * 0.85, 0.5 + row * 0.8, 0.82);
+                            win.parent = group;
+                        }
+                    }
+
+                    // --- Glass canopy at entrance ---
+                    const canopy = BABYLON.MeshBuilder.CreateBox('canopy', {
+                        width: 0.8,
+                        height: 0.03,
+                        depth: 0.4
+                    }, scene);
+                    canopy.material = glassMat;
+                    canopy.position.set(0, 0.7, 0.82);
+                    canopy.parent = group;
+
+                    // --- Door ---
+                    const doorMat = new BABYLON.StandardMaterial('door', scene);
+                    doorMat.diffuseColor = new BABYLON.Color3(0.25, 0.18, 0.12);
+                    const door = BABYLON.MeshBuilder.CreateBox('door', {
+                        width: 0.5,
+                        height: 0.7,
+                        depth: 0.03
+                    }, scene);
+                    door.material = doorMat;
+                    door.position.set(0, 0.35, 0.82);
+                    door.parent = group;
+
+                    // --- Roof elements ---
+                    // Polycarbonate roof detail
+                    const polyRoof = BABYLON.MeshBuilder.CreateBox('polyRoof', {
+                        width: 2.0,
+                        height: 0.02,
+                        depth: 0.9
+                    }, scene);
+                    polyRoof.material = glassMat;
+                    polyRoof.position.set(0, 4.4, 0);
+                    polyRoof.parent = group;
+
+                    // Rooftop garden
+                    const garden = BABYLON.MeshBuilder.CreateBox('garden', {
+                        width: 0.7,
+                        height: 0.08,
+                        depth: 0.4
+                    }, scene);
+                    garden.material = greenMat;
+                    garden.position.set(-0.7, 4.3, 0.5);
+                    garden.parent = group;
+
+                    // --- Cross (Christian symbol - BPK Penabur) ---
+                    const crossV = BABYLON.MeshBuilder.CreateBox('crossV', {
+                        width: 0.08,
+                        height: 0.5,
+                        depth: 0.04
+                    }, scene);
+                    crossV.material = crossMat;
+                    crossV.position.set(1.8, 2.5, 0.83);
+                    crossV.parent = group;
+
+                    const crossH = BABYLON.MeshBuilder.CreateBox('crossH', {
+                        width: 0.25,
+                        height: 0.06,
+                        depth: 0.04
+                    }, scene);
+                    crossH.material = crossMat;
+                    crossH.position.set(1.8, 2.7, 0.83);
+                    crossH.parent = group;
+
+                    // --- Logo / Emblem on facade ---
+                    const logo = BABYLON.MeshBuilder.CreateBox('logo', {
+                        width: 0.25,
+                        height: 0.25,
+                        depth: 0.02
+                    }, scene);
+                    logo.material = logoMat;
+                    logo.position.set(1.8, 1.8, 0.83);
+                    logo.parent = group;
+
+                    // --- Text labels using dynamic texture (optional) ---
+                    // We'll use a simple plane with text texture
+                    const createLabel = (text, x, y, z, color = '#4a90d9') => {
+                        const texture = new BABYLON.DynamicTexture('label', { width: 512, height: 128 }, scene, false);
+                        const ctx = texture.getContext();
+                        ctx.clearRect(0, 0, 512, 128);
+                        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                        ctx.roundRect(10, 10, 492, 108, 12);
+                        ctx.fill();
+                        ctx.font = 'bold 42px Segoe UI, Arial, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = color;
+                        ctx.fillText(text, 256, 64);
+                        texture.update();
+
+                        const mat = new BABYLON.StandardMaterial('labelMat_' + x, scene);
+                        mat.diffuseTexture = texture;
+                        mat.specularColor = new BABYLON.Color3(0, 0, 0);
+                        mat.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                        mat.emissiveIntensity = 0.3;
+
+                        const plane = BABYLON.MeshBuilder.CreatePlane('label_' + x, {
+                            width: 0.8,
+                            height: 0.2
+                        }, scene);
+                        plane.material = mat;
+                        plane.position.set(x, y, z);
+                        plane.parent = group;
+                        plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+                        return plane;
+                    };
+
+                    // Add school name label
+                    createLabel('SMA BPK PENABUR HOLIS', 0, 4.8, 0.5, '#ffffff');
+                    createLabel('#smaholisseru', 0, 5.3, 0.5, '#4a90d9');
+
+                    // --- Ground plane with grid (for AR tracking visual) ---
+                    const gridMat = new BABYLON.GridMaterial('gridMat', scene);
+                    gridMat.mainColor = new BABYLON.Color3(0.2, 0.5, 0.9);
+                    gridMat.gridRatio = 0.5;
+                    gridMat.majorUnitFrequency = 2;
+                    gridMat.minorUnitVisibility = 0.3;
+                    gridMat.opacity = 0.4;
+
+                    const ground = BABYLON.MeshBuilder.CreateGround('ground', {
+                        width: 3.5,
+                        height: 3.5
+                    }, scene);
+                    ground.material = gridMat;
+                    ground.position.y = -0.01;
+                    ground.parent = group;
+
+                    // Add subtle glow around the building
+                    const glowMat = new BABYLON.StandardMaterial('glow', scene);
+                    glowMat.emissiveColor = new BABYLON.Color3(0.1, 0.2, 0.5);
+                    glowMat.alpha = 0.1;
+                    const glowPlane = BABYLON.MeshBuilder.CreatePlane('glow', {
+                        width: 4.5,
+                        height: 5.0
+                    }, scene);
+                    glowPlane.material = glowMat;
+                    glowPlane.position.set(0, 2.5, -0.5);
+                    glowPlane.parent = group;
+
+                    // Return the group
+                    if (parent) {
+                        group.parent = parent;
+                    }
+                    return group;
+                };
+
+                // --- WebXR AR Setup ---
+                const arSession = await scene.createDefaultXRExperienceAsync({
+                    uiOptions: {
+                        sessionMode: 'immersive-ar',
+                        referenceSpaceType: 'local-floor'
+                    },
+                    optionalFeatures: ['bounded-floor']
+                });
+
+                // Hide loading
+                document.getElementById('loading').classList.add('hint');
+                setTimeout(() => {
+                    document.getElementById('loading').classList.add('hidden');
+                }, 500);
+
+                // Show hint
+                setTimeout(() => {
+                    document.getElementById('hint').classList.add('visible');
+                }, 3000);
+                setTimeout(() => {
+                    document.getElementById('hint').classList.remove('visible');
+                }, 8000);
+
+                // Build the school model
+                const school = buildSchoolModel(scene.rootNode);
+
+                // --- Lighting ---
+                // Environment lighting
+                const env = scene.createDefaultEnvironment({
+                    createGround: false,
+                    skybox: false
+                });
+
+                // Additional lights for better AR rendering
+                const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
+                hemiLight.intensity = 0.7;
+                hemiLight.diffuse = new BABYLON.Color3(0.9, 0.9, 0.85);
+                hemiLight.groundColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+
+                const dirLight = new BABYLON.DirectionalLight('dirLight', new BABYLON.Vector3(-1, -2, 1), scene);
+                dirLight.intensity = 0.8;
+                dirLight.position = new BABYLON.Vector3(5, 8, 5);
+
+                const fillLight = new BABYLON.DirectionalLight('fillLight', new BABYLON.Vector3(1, -0.5, -1), scene);
+                fillLight.intensity = 0.3;
+
+                // --- Rotation animation (subtle) ---
+                let time = 0;
+                scene.registerBeforeRender(() => {
+                    time += 0.005;
+                    // Very slow rotation to showcase the building
+                    // school.rotation.y = Math.sin(time * 0.1) * 0.05;
+                });
+
+                // --- Handle visibility of the building ---
+                // Check if we have a valid XR session
+                if (arSession && arSession.baseExperience) {
+                    const xrSession = arSession.baseExperience;
+                    // The building is already placed in front of the camera
+                    // We can add a small offset based on device orientation
+                }
+
+                // --- Resize ---
+                engine.runRenderLoop(() => {
+                    scene.render();
+                });
+
+                return scene;
+            };
+
+            // --- Start ---
+            createScene().then(scene => {
+                // Success
+            }).catch(err => {
+                console.error('AR initialization failed:', err);
+                // Fallback: Non-AR scene
+                document.getElementById('ar-status').innerHTML = '⚠️ AR Tidak Tersedia';
+                document.getElementById('ar-status').style.color = '#fbbf24';
+                document.getElementById('loading').classList.add('hidden');
+
+                // Create fallback scene with 3D view
+                const fallbackScene = new BABYLON.Scene(engine);
+                fallbackScene.clearColor = new BABYLON.Color4(0.1, 0.15, 0.25, 1);
+
+                const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI / 4, 0.6, 6, 
+                    new BABYLON.Vector3(0, 1.5, 0), fallbackScene);
+                camera.attachControl(canvas, true);
+                camera.lowerRadiusLimit = 2;
+                camera.upperRadiusLimit = 12;
+
+                // Build model
+                const group = new BABYLON.TransformNode('root', fallbackScene);
+                const school = buildSchoolModel(group);
+                group.position.set(0, 0, 0);
+                group.scaling.setAll(0.3);
+
+                // Lighting
+                const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), fallbackScene);
+                hemi.intensity = 0.8;
+                const dir = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1, -2, 1), fallbackScene);
+                dir.intensity = 1;
+
+                // Environment
+                const env = fallbackScene.createDefaultEnvironment({ createGround: true });
+
+                // Animation
+                let angle = 0;
+                fallbackScene.registerBeforeRender(() => {
+                    angle += 0.005;
+                    group.rotation.y = angle;
+                });
+
+                engine.runRenderLoop(() => {
+                    fallbackScene.render();
+                });
+
+                // Update UI
+                document.getElementById('ui-overlay').querySelector('h1').textContent = '🏛️ SMA BPK PENABUR HOLIS';
+                document.getElementById('hint').textContent = '🔄 Seret untuk memutar • Geser untuk zoom';
+                document.getElementById('hint').classList.add('visible');
+            });
+
+            // --- Resize ---
+            window.addEventListener('resize', () => {
+                engine.resize();
+            });
+
+        })();
+    </script>
+</body>
+</html>
