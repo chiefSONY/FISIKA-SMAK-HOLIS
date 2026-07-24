@@ -260,7 +260,6 @@
             color: rgba(0, 255, 136, 0.2);
         }
 
-        /* Face detection dots */
         .face-dots-canvas {
             position: absolute;
             top: 0;
@@ -476,6 +475,51 @@
             cursor: not-allowed;
         }
 
+        /* Tombol scan khusus di bawah video */
+        .scan-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .scan-btn-wrapper button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 255, 136, 0.06);
+            background: rgba(0, 255, 136, 0.02);
+            color: rgba(0, 255, 136, 0.4);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scan-btn-wrapper button:hover {
+            background: rgba(0, 255, 136, 0.04);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: rgba(0, 255, 136, 0.7);
+        }
+
+        .scan-btn-wrapper button.active {
+            background: rgba(0, 255, 136, 0.06);
+            border-color: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .scan-btn-wrapper button i {
+            font-size: 0.8rem;
+        }
+
+        .scan-btn-wrapper button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         .footer-note {
             margin-top: 1.5rem;
             text-align: center;
@@ -638,6 +682,10 @@
                 padding: 0.4rem 1rem;
                 font-size: 0.7rem;
             }
+            .scan-btn-wrapper button {
+                padding: 0.4rem 1rem;
+                font-size: 0.7rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -691,6 +739,16 @@
                         <span id="placeholderText">Mengaktifkan webcam...</span>
                         <span style="font-size:0.7rem; opacity:0.3;">izinkan akses kamera</span>
                     </div>
+                </div>
+
+                <!-- TOMBOL SCAN WAJAH DI BAWAH VIDEO -->
+                <div class="scan-btn-wrapper">
+                    <button id="scanFaceBtn" onclick="startFaceScan()" disabled>
+                        <i class="fas fa-search"></i> Scan Wajah
+                    </button>
+                    <button onclick="captureSnapshot()">
+                        <i class="fas fa-camera"></i> Snapshot
+                    </button>
                 </div>
 
                 <!-- Progress bar untuk scan wajah -->
@@ -754,6 +812,13 @@
                     </div>
                 </div>
 
+                <!-- TOMBOL SCAN SUARA DI BAWAH AUDIO STREAM -->
+                <div class="scan-btn-wrapper">
+                    <button id="scanVoiceBtn" onclick="startVoiceScan()" disabled>
+                        <i class="fas fa-search"></i> Scan Suara
+                    </button>
+                </div>
+
                 <!-- Progress bar untuk scan suara -->
                 <div class="scan-progress-container">
                     <div class="scan-progress-bar">
@@ -787,19 +852,10 @@
             </div>
         </div>
 
-        <!-- CONTROLS -->
+        <!-- CONTROLS UMUM -->
         <div class="controls">
             <button id="toggleBtn" onclick="toggleWebcam()">
                 <i class="fas fa-play"></i> Start Webcam
-            </button>
-            <button id="scanFaceBtn" onclick="startFaceScan()">
-                <i class="fas fa-search"></i> Scan Wajah
-            </button>
-            <button id="scanVoiceBtn" onclick="startVoiceScan()">
-                <i class="fas fa-search"></i> Scan Suara
-            </button>
-            <button onclick="captureSnapshot()">
-                <i class="fas fa-camera"></i> Snapshot
             </button>
         </div>
 
@@ -882,7 +938,6 @@
             dotsCanvas.height = h;
             dotsCtx.clearRect(0, 0, w, h);
 
-            // Cari area yang kemungkinan adalah wajah (berdasarkan warna kulit)
             const facePoints = [];
             const step = 4;
 
@@ -893,7 +948,6 @@
                     const g = data[idx + 1];
                     const b = data[idx + 2];
 
-                    // Deteksi warna kulit sederhana
                     if (r > 60 && g > 40 && b > 20 &&
                         r > g && r > b &&
                         Math.abs(r - g) > 15 &&
@@ -903,9 +957,7 @@
                 }
             }
 
-            // Gambar titik-titik deteksi wajah
             if (facePoints.length > 20) {
-                // Hitung centroid untuk menentukan area tengah wajah
                 let cx = 0,
                     cy = 0;
                 facePoints.forEach(p => { cx += p.x;
@@ -913,19 +965,16 @@
                 cx /= facePoints.length;
                 cy /= facePoints.length;
 
-                // Gambar titik-titik dengan efek glow
                 facePoints.forEach(p => {
                     const dist = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
                     const maxDist = Math.min(w, h) * 0.5;
                     const alpha = 1 - (dist / maxDist) * 0.5;
 
-                    // Titik utama
                     dotsCtx.beginPath();
                     dotsCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
                     dotsCtx.fillStyle = `rgba(0, 255, 136, ${0.3 + alpha * 0.5})`;
                     dotsCtx.fill();
 
-                    // Glow
                     if (dist < maxDist * 0.3) {
                         const gradient = dotsCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 6);
                         gradient.addColorStop(0, `rgba(0, 255, 136, ${0.1 + alpha * 0.2})`);
@@ -937,7 +986,6 @@
                     }
                 });
 
-                // Gambar lingkaran di tengah wajah sebagai panduan
                 const radius = Math.min(w, h) * 0.15;
                 dotsCtx.beginPath();
                 dotsCtx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -947,7 +995,6 @@
                 dotsCtx.stroke();
                 dotsCtx.setLineDash([]);
 
-                // Tambahkan titik tengah
                 dotsCtx.beginPath();
                 dotsCtx.arc(cx, cy, 4, 0, Math.PI * 2);
                 dotsCtx.fillStyle = 'rgba(0, 255, 136, 0.6)';
@@ -974,7 +1021,6 @@
             const imageData = tempCtx.getImageData(0, 0, w, h);
             const data = imageData.data;
 
-            // Deteksi wajah dan gambar titik-titik
             const faceDetected = drawFaceDots(data, w, h);
 
             if (faceDetected) {
@@ -986,7 +1032,6 @@
                 faceStatus.textContent = 'Tidak terdeteksi';
                 faceStatus.style.color = 'rgba(0,255,136,0.2)';
                 faceStatusLabel.textContent = 'Tidak ada wajah';
-                // Hapus titik-titik jika tidak ada wajah
                 dotsCtx.clearRect(0, 0, dotsCanvas.width, dotsCanvas.height);
             }
         }
@@ -1096,7 +1141,6 @@
             faceProgressText.textContent = '0%';
             faceStatusLabel.textContent = 'Scanning...';
 
-            // Matikan deteksi wajah berjalan
             if (faceDetectionInterval) {
                 clearInterval(faceDetectionInterval);
                 faceDetectionInterval = null;
@@ -1131,7 +1175,6 @@
                     faceScanSub.textContent = 'Sedang memproses emosi';
                 }
 
-                // Ambil frame dan deteksi
                 if (video.videoWidth > 0) {
                     const w = video.videoWidth;
                     const h = video.videoHeight;
@@ -1165,7 +1208,6 @@
             faceResultBox.classList.add('show');
             faceResultValue.textContent = `${data.emoji} ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - ${data.advice.replace(/<[^>]*>/g, '')}`;
 
-            // Lanjutkan deteksi wajah normal
             if (faceDetectionInterval) {
                 clearInterval(faceDetectionInterval);
             }
@@ -1245,7 +1287,6 @@
                 statusText.textContent = 'LIVE';
                 placeholderIcon.className = 'fas fa-camera';
 
-                // Siapkan canvas untuk dots
                 dotsCanvas.width = video.videoWidth || 640;
                 dotsCanvas.height = video.videoHeight || 480;
 
@@ -1412,7 +1453,6 @@
             voiceVizCtx.clearRect(0, 0, w, h);
 
             if (!isVoiceActive || !analyser) {
-                // Tampilkan pesan placeholder
                 voiceVizCtx.fillStyle = 'rgba(0, 255, 136, 0.02)';
                 voiceVizCtx.fillRect(0, 0, w, h);
                 return;
@@ -1422,12 +1462,10 @@
             const dataArray = new Uint8Array(bufferLength);
             analyser.getByteFrequencyData(dataArray);
 
-            // Gambar titik-titik suara
             const centerX = w / 2;
             const centerY = h / 2;
             const maxRadius = Math.min(w, h) * 0.35;
 
-            // Titik-titik yang berdenyut berdasarkan frekuensi
             for (let i = 0; i < bufferLength; i += 4) {
                 const value = dataArray[i] / 255;
                 const angle = (i / bufferLength) * Math.PI * 2;
@@ -1444,7 +1482,6 @@
                 voiceVizCtx.fillStyle = `rgba(0, 255, 136, ${alpha * 0.5})`;
                 voiceVizCtx.fill();
 
-                // Glow
                 if (value > 0.3) {
                     const glow = voiceVizCtx.createRadialGradient(x, y, 0, x, y, size * 3);
                     glow.addColorStop(0, `rgba(0, 255, 136, ${alpha * 0.1})`);
@@ -1456,7 +1493,6 @@
                 }
             }
 
-            // Lingkaran tengah
             const avgVolume = dataArray.reduce((a, b) => a + b, 0) / bufferLength / 255;
             const pulseRadius = 10 + avgVolume * 30;
 
@@ -1470,7 +1506,6 @@
             voiceVizCtx.fillStyle = `rgba(0, 255, 136, ${0.3 + avgVolume * 0.5})`;
             voiceVizCtx.fill();
 
-            // Gelombang suara
             const wavePoints = [];
             for (let i = 0; i < 360; i += 2) {
                 const angle = (i / 360) * Math.PI * 2;
@@ -1493,7 +1528,6 @@
                 voiceVizCtx.stroke();
             }
 
-            // Label status di tengah
             if (avgVolume > 0.05) {
                 voiceVizCtx.fillStyle = `rgba(0, 255, 136, ${0.2 + avgVolume * 0.3})`;
                 voiceVizCtx.font = '12px Inter, sans-serif';
@@ -1566,7 +1600,6 @@
                 voiceStatusLabel.textContent = 'Diam';
             }
 
-            // Gambar visualizer
             drawVoiceVisualizer();
 
             voiceAnimationId = requestAnimationFrame(detectVoice);
@@ -1670,7 +1703,6 @@
                     voiceScanSub.textContent = 'Sedang memproses kualitas suara';
                 }
 
-                // Ambil sampel suara
                 if (analyser) {
                     const freqData = new Uint8Array(analyser.frequencyBinCount);
                     analyser.getByteFrequencyData(freqData);
@@ -1680,7 +1712,6 @@
                     }
                     const avg = sum / freqData.length / 255;
                     if (avg > 0.05) {
-                        // Update status
                         const volume = Math.min(1, avg * 2);
                         analyzeVoice(volume);
                     }
@@ -1734,7 +1765,6 @@
             scanFaceBtn.disabled = true;
             scanVoiceBtn.disabled = true;
 
-            // Setup voice visualizer canvas
             const resizeVisualizer = () => {
                 const container = voiceVisualizerCanvas.parentElement;
                 voiceVisualizerCanvas.width = container.clientWidth;
