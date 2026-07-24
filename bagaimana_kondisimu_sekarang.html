@@ -475,7 +475,6 @@
             cursor: not-allowed;
         }
 
-        /* Tombol scan khusus di bawah video */
         .scan-btn-wrapper {
             display: flex;
             justify-content: center;
@@ -932,14 +931,15 @@
             }
         };
 
-        // ===== DRAW FACE DOTS =====
+        // ===== DRAW FACE DOTS - HANYA DI BAGIAN PENTING =====
         function drawFaceDots(data, w, h) {
             dotsCanvas.width = w;
             dotsCanvas.height = h;
             dotsCtx.clearRect(0, 0, w, h);
 
+            // Kumpulkan titik-titik wajah dengan sampling yang lebih jarang
             const facePoints = [];
-            const step = 4;
+            const step = 8; // Lebih jarang untuk mengurangi jumlah titik
 
             for (let y = 0; y < h; y += step) {
                 for (let x = 0; x < w; x += step) {
@@ -948,6 +948,7 @@
                     const g = data[idx + 1];
                     const b = data[idx + 2];
 
+                    // Deteksi warna kulit
                     if (r > 60 && g > 40 && b > 20 &&
                         r > g && r > b &&
                         Math.abs(r - g) > 15 &&
@@ -957,53 +958,140 @@
                 }
             }
 
-            if (facePoints.length > 20) {
-                let cx = 0,
-                    cy = 0;
-                facePoints.forEach(p => { cx += p.x;
-                    cy += p.y; });
-                cx /= facePoints.length;
-                cy /= facePoints.length;
+            if (facePoints.length < 30) return false;
 
-                facePoints.forEach(p => {
-                    const dist = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
-                    const maxDist = Math.min(w, h) * 0.5;
-                    const alpha = 1 - (dist / maxDist) * 0.5;
+            // Hitung centroid (pusat wajah)
+            let cx = 0,
+                cy = 0;
+            facePoints.forEach(p => { cx += p.x;
+                cy += p.y; });
+            cx /= facePoints.length;
+            cy /= facePoints.length;
 
-                    dotsCtx.beginPath();
-                    dotsCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                    dotsCtx.fillStyle = `rgba(0, 255, 136, ${0.3 + alpha * 0.5})`;
-                    dotsCtx.fill();
+            // Cari titik-titik penting: mata, hidung, mulut, dan tepi
+            const keyPoints = [];
+            const radius = Math.min(w, h) * 0.35;
 
-                    if (dist < maxDist * 0.3) {
-                        const gradient = dotsCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 6);
-                        gradient.addColorStop(0, `rgba(0, 255, 136, ${0.1 + alpha * 0.2})`);
-                        gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');
-                        dotsCtx.beginPath();
-                        dotsCtx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-                        dotsCtx.fillStyle = gradient;
-                        dotsCtx.fill();
-                    }
-                });
+            // Filter titik berdasarkan jarak dari centroid
+            const filtered = facePoints.filter(p => {
+                const dist = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
+                return dist < radius;
+            });
 
-                const radius = Math.min(w, h) * 0.15;
-                dotsCtx.beginPath();
-                dotsCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-                dotsCtx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
-                dotsCtx.lineWidth = 2;
-                dotsCtx.setLineDash([5, 5]);
-                dotsCtx.stroke();
-                dotsCtx.setLineDash([]);
+            if (filtered.length < 20) return false;
 
-                dotsCtx.beginPath();
-                dotsCtx.arc(cx, cy, 4, 0, Math.PI * 2);
-                dotsCtx.fillStyle = 'rgba(0, 255, 136, 0.6)';
-                dotsCtx.fill();
+            // Ambil titik-titik untuk setiap zona penting
+            const zones = {
+                // Mata kiri
+                leftEye: filtered.filter(p => p.x < cx - 20 && p.y < cy - 10 && p.y > cy - 40),
+                // Mata kanan
+                rightEye: filtered.filter(p => p.x > cx + 20 && p.y < cy - 10 && p.y > cy - 40),
+                // Hidung
+                nose: filtered.filter(p => Math.abs(p.x - cx) < 20 && p.y > cy - 5 && p.y < cy + 20),
+                // Mulut
+                mouth: filtered.filter(p => Math.abs(p.x - cx) < 30 && p.y > cy + 25 && p.y < cy + 55),
+                // Tepi kiri
+                leftEdge: filtered.filter(p => p.x < cx - 40 && Math.abs(p.y - cy) < 30),
+                // Tepi kanan
+                rightEdge: filtered.filter(p => p.x > cx + 40 && Math.abs(p.y - cy) < 30),
+                // Atas
+                top: filtered.filter(p => Math.abs(p.x - cx) < 30 && p.y < cy - 40),
+                // Bawah
+                bottom: filtered.filter(p => Math.abs(p.x - cx) < 30 && p.y > cy + 40)
+            };
 
-                return true;
+            // Fungsi untuk mengambil titik tengah dari sebuah zona
+            const getCenter = (points) => {
+                if (points.length === 0) return null;
+                let sx = 0,
+                    sy = 0;
+                points.forEach(p => { sx += p.x;
+                    sy += p.y; });
+                return { x: sx / points.length, y: sy / points.length };
+            };
+
+            // Kumpulkan titik-titik penting
+            const importantPoints = [];
+            const zoneKeys = ['leftEye', 'rightEye', 'nose', 'mouth', 'leftEdge', 'rightEdge', 'top', 'bottom'];
+
+            zoneKeys.forEach(key => {
+                const center = getCenter(zones[key]);
+                if (center) {
+                    importantPoints.push(center);
+                }
+            });
+
+            // Tambahkan beberapa titik acak dari area wajah untuk membuat pola yang natural
+            const additionalPoints = [];
+            for (let i = 0; i < 12; i++) {
+                const idx = Math.floor(Math.random() * filtered.length);
+                if (filtered[idx]) {
+                    additionalPoints.push(filtered[idx]);
+                }
             }
 
-            return false;
+            // Gabungkan semua titik
+            const allPoints = [...importantPoints, ...additionalPoints];
+
+            // Gambar titik-titik
+            allPoints.forEach(p => {
+                // Titik utama
+                dotsCtx.beginPath();
+                dotsCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                dotsCtx.fillStyle = 'rgba(0, 255, 136, 0.7)';
+                dotsCtx.fill();
+
+                // Efek glow
+                const gradient = dotsCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
+                gradient.addColorStop(0, 'rgba(0, 255, 136, 0.15)');
+                gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');
+                dotsCtx.beginPath();
+                dotsCtx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                dotsCtx.fillStyle = gradient;
+                dotsCtx.fill();
+            });
+
+            // Garis penghubung antar titik penting (membentuk kerangka wajah)
+            if (importantPoints.length >= 4) {
+                dotsCtx.beginPath();
+                dotsCtx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                dotsCtx.lineWidth = 1;
+
+                // Hubungkan mata, hidung, mulut
+                const eyeCenter = getCenter(zones.leftEye);
+                const eyeRight = getCenter(zones.rightEye);
+                const noseCenter = getCenter(zones.nose);
+                const mouthCenter = getCenter(zones.mouth);
+
+                if (eyeCenter && eyeRight) {
+                    dotsCtx.moveTo(eyeCenter.x, eyeCenter.y);
+                    dotsCtx.lineTo(eyeRight.x, eyeRight.y);
+                }
+                if (eyeCenter && noseCenter) {
+                    dotsCtx.moveTo(eyeCenter.x, eyeCenter.y);
+                    dotsCtx.lineTo(noseCenter.x, noseCenter.y);
+                }
+                if (eyeRight && noseCenter) {
+                    dotsCtx.moveTo(eyeRight.x, eyeRight.y);
+                    dotsCtx.lineTo(noseCenter.x, noseCenter.y);
+                }
+                if (noseCenter && mouthCenter) {
+                    dotsCtx.moveTo(noseCenter.x, noseCenter.y);
+                    dotsCtx.lineTo(mouthCenter.x, mouthCenter.y);
+                }
+                dotsCtx.stroke();
+            }
+
+            // Lingkaran panduan di tengah wajah
+            dotsCtx.beginPath();
+            dotsCtx.arc(cx, cy, Math.min(w, h) * 0.12, 0, Math.PI * 2);
+            dotsCtx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+            dotsCtx.lineWidth = 1;
+            dotsCtx.setLineDash([4, 6]);
+            dotsCtx.stroke();
+            dotsCtx.setLineDash([]);
+
+            return true;
         }
 
         // ===== DETECT FACE =====
